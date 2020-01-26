@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,8 +15,11 @@ namespace Tangara
         static void Main(string[] args)
         {
             Console.WriteLine("Tangara started");
-            Generator generator = new Generator();
-            List<Expression> expressions = new List<Expression>();
+            Parser parser = new Parser();
+            Generator generator;// = new Generator();
+            using (StreamReader fs = new StreamReader(args[0], Encoding.UTF8))
+                generator = parser.Parse(fs.ReadToEnd(), new Config());
+            /*List<Expression> expressions = new List<Expression>();
             expressions.Add(new Expression
             {
                 token = Token.DIRECTIVA,
@@ -98,8 +102,8 @@ namespace Tangara
             expressions.Add(new Expression()); //add NULL
             expressions.Add(new Expression { token = Token.END, args = new List<Identifer>() });
             expressions.Add(new Expression { token = Token.END, args = new List<Identifer>() });
-            generator.expressions = expressions;
-            generator.Build("TokensApp", false);
+            generator.expressions = expressions;*/
+            generator.Build("TokensApp", true);
             generator.CreatePE("TokensApp.exe");
         }
     }
