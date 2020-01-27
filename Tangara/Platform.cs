@@ -14,7 +14,7 @@ namespace Tangara
             else_keyword = "else", switch_keyword = "switch", case_keyword = "case", break_keyword = "break",
             continue_keyword = "continue", while_keyword = "while", for_keyword = "for", try_keyword = "try",
             catch_keyword = "catch", attributte_start = "@", attribute_end = string.Empty, foreach_keyword = "foreach",
-            end_expression = ";";
+            end_expression = ";", string_start = "\"", string_end = "\"";
 
         public static Platform GetPlatformFromXML(string path)
         {

@@ -50,10 +50,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Config.cs" />
+    <Compile Include="Errors\ImportError.cs" />
+    <Compile Include="Errors\SyntaxError.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="Platform.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TangaraError.cs" />
+    <Compile Include="TangaraWarning.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
