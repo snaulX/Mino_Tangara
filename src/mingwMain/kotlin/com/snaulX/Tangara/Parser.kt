@@ -1,6 +1,7 @@
 package com.snaulX.Tangara
 
-import platform.posix.fopen
+import kotlinx.cinterop.*
+import platform.posix.*
 
 class Parser {
     var import_keyword = "import"
@@ -48,7 +49,7 @@ class Parser {
     private var pos = 0
     private var code: List<String> = listOf()
     val errors: MutableList<TangaraError> = mutableListOf()
-    private var buffer: StringBuilder = StringBuilder()
+    var buffer: StringBuilder = StringBuilder()
     private val current: Char
         get() {
             return code[line][pos]
@@ -79,5 +80,51 @@ class Parser {
 
     fun buildTokens(tokens_name: String) {
         val file = fopen(tokens_name, "wb")
+        try {
+            val byteArray: ByteArray = output.toByteArray()
+            val out: CValues<ByteVar> = byteArray.toCValues()
+            fwrite(out, sizeOf<ByteVar>().toULong(), 1, file)
+        }
+        catch (e: Exception) {
+            //pass
+        }
+    }
+
+    fun parse() {
+        for (strline: String in code) {
+            val newStrLine = strline.trimStart()
+            if (newStrLine.startsWith(annotaion_start)) {
+                //it`s annotation
+            }
+            else if (newStrLine.startsWith(directive_start)) {
+                //it`s directive
+
+            }
+            else {
+                val keyword = readKeyword()
+                when (keyword) {
+                    import_keyword -> import()
+                }
+            }
+        }
+    }
+
+    fun readKeyword(): String {
+        skipWhitespaces()
+        val builder: StringBuilder = StringBuilder()
+        while (current.isLetter()) {
+            try {
+                builder.append(current)
+                pos++
+            }
+            catch (e: Exception) {
+                break
+            }
+        }
+        return builder.toString()
+    }
+
+    fun import() {
+        //pass
     }
 }

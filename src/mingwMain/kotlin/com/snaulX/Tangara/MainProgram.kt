@@ -17,11 +17,14 @@ fun main(args: Array<String>) {
         val parser: Parser = Parser()
         val file: CPointer<FILE>? = fopen(args[0], "r")
         var c: Int = getc(file)
-        val buffer: StringBuilder = StringBuilder()
-        while (c != EOF)
-        {
-            buffer.append(c.toChar())
+        with (parser) {
+            while (c != EOF)
+            {
+                buffer.append(c.toChar())
+            }
+            getCode(buffer.toString())
+            parse()
+            buildTokens(args[1])
         }
-        parser.getCode(buffer.toString())
     }
 }
