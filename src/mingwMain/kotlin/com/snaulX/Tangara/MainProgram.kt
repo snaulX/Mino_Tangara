@@ -1,7 +1,6 @@
 package com.snaulX.Tangara
 
-import kotlinx.cinterop.CPointer
-import kotlinx.cinterop.pointed
+import kotlinx.cinterop.*
 import platform.posix.*
 
 fun main(args: Array<String>) {
@@ -18,13 +17,11 @@ fun main(args: Array<String>) {
         val file: CPointer<FILE>? = fopen(args[0], "r")
         var c: Int = getc(file)
         with (parser) {
-            while (c != EOF)
-            {
+            while (c != EOF) {
                 buffer.append(c.toChar())
             }
-            getCode(buffer.toString())
+            getCode(buffer.toString(), args[1])
             parse()
-            buildTokens(args[1])
         }
     }
 }

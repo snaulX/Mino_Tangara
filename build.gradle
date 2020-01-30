@@ -9,6 +9,30 @@ kotlin {
     // For Linux, should be changed to e.g. linuxX64
     // For MacOS, should be changed to e.g. macosX64
     mingwX64("mingw") {
+        compilations.main {
+            cinterops {
+                expat {
+                    // Def-file describing the native API.
+                    // The default path is src/nativeInterop/cinterop/<interop-name>.def
+                    defFile project.file("lib\\expat-2.2.9\\expat.def")
+
+                    // Package to place the Kotlin API generated.
+                    packageName 'expat'
+                    // Options to be passed to compiler by cinterop tool.
+                    compilerOpts '-Iexpat/lib'
+
+                    // Directories for header search (an analogue of the -I<path> compiler option).
+                    //includeDirs.allHeaders("path1", "path2")
+
+                    // Additional directories to search headers listed in the 'headerFilter' def-file option.
+                    // -headerFilterAdditionalSearchPrefix command line option analogue.
+                    //includeDirs.headerFilterOnly("path1", "path2")
+
+                    // A shortcut for includeDirs.allHeaders.
+                    includeDirs("lib\\expat-2.2.9\\lib")
+                }
+            }
+        }
         binaries {
             executable {
                 // Change to specify fully qualified name of your application's entry point:
@@ -27,7 +51,6 @@ kotlin {
         }
     }
 }
-
 // Use the following Gradle tasks to run your application:
 // :runReleaseExecutableMingw - without debug symbols
 // :runDebugExecutableMingw - with debug symbols
