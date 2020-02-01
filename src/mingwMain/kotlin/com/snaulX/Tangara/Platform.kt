@@ -9,7 +9,7 @@ object Platform {
     var private_keyword = "private"
     var protected_keyword = "protected"
     var sealed_keyword = "sealed"
-    var function_keyword = "function"
+    var function_keyword = "fun"
     var variable_keyword = "var"
     var try_keyword = "try"
     var catch_keyword = "catch"

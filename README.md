@@ -1,2 +1,2 @@
 # Tangara
- Tangara is the official parser of WoL PL
+ Tangara is the official parser of Mino

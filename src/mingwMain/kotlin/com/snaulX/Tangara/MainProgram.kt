@@ -15,7 +15,7 @@ fun main(args: Array<String>) {
     else {
         val parser: Parser = Parser()
         val file: CPointer<FILE>? = fopen(args[0], "r")
-        var c: Int = getc(file)
+        val c: Int = getc(file)
         with (parser) {
             while (c != EOF) {
                 buffer.append(c.toChar())

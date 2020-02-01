@@ -1,8 +1,5 @@
 package com.snaulX.Tangara
 
-import kotlinx.cinterop.*
-import platform.posix.*
-
 class Parser {
     var appname = ""
     private var line = 0
@@ -15,7 +12,7 @@ class Parser {
             return code[line][pos]
         }
 
-    fun skipWhitespaces(): Int {
+    fun skipWhitespaces(): Boolean {
         while (current.isWhitespace())
         {
             try {
@@ -26,11 +23,11 @@ class Parser {
                     line++
                 }
                 catch (e: IndexOutOfBoundsException) {
-                    return -1
+                    return false
                 }
             }
         }
-        return 0
+        return true
     }
 
     fun getCode(input: String, name: String) {
@@ -39,41 +36,81 @@ class Parser {
     }
 
     fun parse(build: Boolean = false) {
-        val file = fopen(appname, "wb")
+        //val tc: TokensCreator = TokensCreator()
+        //if (build) tc.setOutput("$appname.tokens")
         for (strline: String in code) {
-            val newStrLine = strline.trimStart()
-            if (newStrLine.startsWith(Platform.annotaion_start)) {
+            if (!skipWhitespaces()) break
+            val keyword = readKeyword()
+            if (keyword.isEmpty()) {
+                if (current.isDigit()) {
+                    readInteger()
+                }
+                else {
+                    break
+                }
+            }
+            if (keyword.startsWith(Platform.directive_start)) {
+                //it`s directive
+                if (keyword == Platform.directive_start) {
+                    createError(SyntaxError(line, pos, "Directive haven`t expression"))
+                }
+            }
+            else if (keyword.startsWith(Platform.annotaion_start)) {
                 //it`s annotation
             }
-            else if (newStrLine.startsWith(Platform.directive_start)) {
-                //it`s directive
-
+            else if (keyword.startsWith(Platform.statement_start)) {
+                //it`s statement
             }
             else {
-                val keyword = readKeyword()
                 when (keyword) {
                     Platform.import_keyword -> import()
+                    else -> pushLiteral()
                 }
+            }
+        }
+        if (errors.isNotEmpty()) {
+            for (error: TangaraError in errors) {
+                error(error.getError())
             }
         }
     }
 
-    fun readKeyword(): String {
-        skipWhitespaces()
-        val builder: StringBuilder = StringBuilder()
-        while (current.isLetter()) {
-            try {
-                builder.append(current)
-                pos++
-            }
-            catch (e: Exception) {
-                break
+    fun readInteger(): String {
+        if (skipWhitespaces()) {
+            while (current.isDigit()) {
+                try {
+                    buffer.append(current)
+                    pos++
+                } catch (e: Exception) {
+                    break
+                }
             }
         }
-        return builder.toString()
+        return buffer.toString()
+    }
+
+    fun readKeyword(): String {
+        if (skipWhitespaces()) {
+            while (current.isLetter()) {
+                try {
+                    buffer.append(current)
+                    pos++
+                } catch (e: Exception) {
+                    break
+                }
+            }
+        }
+        return buffer.toString()
     }
 
     fun import() {
         //pass
+        println("import")
+    }
+
+    fun createError(error: TangaraError) = errors.add(error)
+
+    fun pushLiteral() {
+        //check variable
     }
 }
