@@ -36,6 +36,7 @@ class Parser {
     }
 
     fun parse(build: Boolean = false) {
+        var multiline_comment: Boolean = false
         //val tc: TokensCreator = TokensCreator()
         //if (build) tc.setOutput("$appname.tokens")
         for (strline: String in code) {
@@ -52,7 +53,7 @@ class Parser {
             if (keyword.startsWith(Platform.directive_start)) {
                 //it`s directive
                 if (keyword == Platform.directive_start) {
-                    createError(SyntaxError(line, pos, "Directive haven`t expression"))
+                    createError(SyntaxError(line, pos, "Directive haven`t name"))
                 }
             }
             else if (keyword.startsWith(Platform.annotaion_start)) {
@@ -61,9 +62,29 @@ class Parser {
             else if (keyword.startsWith(Platform.statement_start)) {
                 //it`s statement
             }
+            else if (keyword.startsWith(Platform.array_start)) {
+                //it`s array
+            }
+            else if (keyword.startsWith(Platform.string_char)) {
+                //it`s string
+            }
+            else if (keyword.startsWith(Platform.char_char)) {
+                //it`s char
+            }
+            else if (keyword.startsWith(Platform.single_comment)) {
+                continue
+            }
+            else if (keyword.startsWith(Platform.multiline_comment_start)) {
+                multiline_comment = true
+            }
+            else if (keyword.contains(Platform.multiline_comment_end) && multiline_comment) {
+                multiline_comment = false
+            }
             else {
                 when (keyword) {
                     Platform.import_keyword -> import()
+                    Platform.lib_keyword -> lib()
+                    Platform.use_keyword -> use()
                     else -> pushLiteral()
                 }
             }
@@ -75,7 +96,12 @@ class Parser {
         }
     }
 
-    fun readInteger(): String {
+    fun use() {
+        val using_package: String = readKeyword()
+        println("${Platform.use_keyword} $using_package")
+    }
+
+    fun readInteger(): Int {
         if (skipWhitespaces()) {
             while (current.isDigit()) {
                 try {
@@ -86,7 +112,21 @@ class Parser {
                 }
             }
         }
-        return buffer.toString()
+        return buffer.toString().toInt()
+    }
+
+    fun readDouble(): Double {
+        if (skipWhitespaces()) {
+            while (current.isDigit() || current == '.') {
+                try {
+                    buffer.append(current)
+                    pos++
+                } catch (e: Exception) {
+                    break
+                }
+            }
+        }
+        return buffer.toString().toDouble()
     }
 
     fun readKeyword(): String {
@@ -104,8 +144,13 @@ class Parser {
     }
 
     fun import() {
-        //pass
-        println("import")
+        val platform = readKeyword()
+        println("${Platform.import_keyword} $platform")
+    }
+
+    fun lib() {
+        val lib_name = readKeyword()
+        println("${Platform.lib_keyword} $lib_name")
     }
 
     fun createError(error: TangaraError) = errors.add(error)

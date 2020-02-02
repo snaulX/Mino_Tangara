@@ -46,4 +46,5 @@ object Platform {
     var continue_keyword = "continue"
     var include_keyword = "include"
     var override_keyword = "override"
+    var expression_end = ";"
 }
