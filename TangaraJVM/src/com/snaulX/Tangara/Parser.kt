@@ -9,6 +9,7 @@ class Parser {
     var code: List<String> = listOf()
     val errors: MutableList<TangaraError> = mutableListOf()
     val buffer: StringBuilder = StringBuilder()
+    private val tc: TokensCreator = TokensCreator()
     private val current: Char
         get() {
             return code[line][pos]
@@ -34,7 +35,6 @@ class Parser {
 
     fun parse(build: Boolean = false) {
         var multiline_comment: Boolean = false
-        val tc: TokensCreator = TokensCreator()
         if (build) tc.setOutput("$appname.tokens")
         for (strline: String in code) {
             if (!skipWhitespaces()) break
@@ -82,6 +82,9 @@ class Parser {
                     Platform.import_keyword -> import()
                     Platform.lib_keyword -> lib()
                     Platform.use_keyword -> use()
+                    Platform.include_keyword -> include()
+                    Platform.switch_keyword -> switch()
+                    Platform.typeof_keyword -> addTypeof()
                     else -> pushLiteral()
                 }
             }
@@ -93,10 +96,7 @@ class Parser {
         }
     }
 
-    fun use() {
-        val using_package: String = readKeyword()
-        println("${Platform.use_keyword} $using_package")
-    }
+    fun use() = tc.importPackage(readKeyword())
 
     fun readInteger(): Int {
         if (skipWhitespaces()) {
@@ -140,19 +140,33 @@ class Parser {
         return buffer.toString()
     }
 
+    fun readKeywordInStatement(): String {
+        if (skipWhitespaces()) {
+            val start: String = readKeyword()
+            if (start.startsWith(Platform.statement_start)) {
+                start.removePrefix(Platform.statement_start)
+            }
+            else {
+                createError(SyntaxError(line, pos, "Open statement expression is not valid"))
+            }
+        }
+        return ""
+    }
+
     fun import() {
         val platform = readKeyword()
         println("${Platform.import_keyword} $platform")
     }
 
-    fun lib() {
-        val lib_name = readKeyword()
-        println("${Platform.lib_keyword} $lib_name")
-    }
+    fun lib() = tc.linkLibrary(readKeyword())
 
     fun createError(error: TangaraError) = errors.add(error)
 
-    fun pushLiteral() {
-        //check variable
-    }
+    fun pushLiteral() = tc.callLiteral(buffer.toString())
+
+    fun include() = tc.include(readKeyword())
+
+    fun switch() = tc.createSwitch(readKeywordInStatement())
+
+    fun addTypeof() = tc.checkTypeof(readKeywordInStatement())
 }
