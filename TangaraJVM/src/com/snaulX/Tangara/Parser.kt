@@ -1,12 +1,13 @@
 package com.snaulX.Tangara
 
 import com.snaulX.TokensAPI.*
+import java.io.FileReader
 
 class Parser {
     var appname = ""
     private var line = 0
     private var pos = 0
-    var code: List<String> = listOf()
+    val code: MutableList<String> = mutableListOf()
     val errors: MutableList<TangaraError> = mutableListOf()
     val buffer: StringBuilder = StringBuilder()
     private val tc: TokensCreator = TokensCreator()
@@ -14,6 +15,7 @@ class Parser {
         get() {
             return code[line][pos]
         }
+    var platform: Platform = Platform()
 
     fun skipWhitespaces(): Boolean {
         while (current.isWhitespace())
@@ -36,7 +38,7 @@ class Parser {
     fun parse(build: Boolean = false) {
         var multiline_comment: Boolean = false
         if (build) tc.setOutput("$appname.tokens")
-        for (strline: String in code) {
+        loop@ for (strline: String in code) {
             if (!skipWhitespaces()) break
             val keyword = readKeyword()
             if (keyword.isEmpty()) {
@@ -47,47 +49,50 @@ class Parser {
                     break
                 }
             }
-            if (keyword.startsWith(Platform.directive_start)) {
+            if (keyword.startsWith(platform.directive_start)) {
                 //it`s directive
-                if (keyword == Platform.directive_start) {
+                if (keyword == platform.directive_start) {
                     createError(SyntaxError(line, pos, "Directive haven`t name"))
                 }
             }
-            else if (keyword.startsWith(Platform.annotaion_start)) {
+            else if (keyword.startsWith(platform.annotaion_start)) {
                 //it`s annotation
             }
-            else if (keyword.startsWith(Platform.statement_start)) {
+            else if (keyword.startsWith(platform.statement_start)) {
                 //it`s statement
             }
-            else if (keyword.startsWith(Platform.array_start)) {
+            else if (keyword.startsWith(platform.array_start)) {
                 //it`s array
             }
-            else if (keyword.startsWith(Platform.string_char)) {
+            else if (keyword.startsWith(platform.string_char)) {
                 //it`s string
             }
-            else if (keyword.startsWith(Platform.char_char)) {
+            else if (keyword.startsWith(platform.char_char)) {
                 //it`s char
             }
-            else if (keyword.startsWith(Platform.single_comment)) {
+            else if (keyword.startsWith(platform.single_comment)) {
                 continue
             }
-            else if (keyword.startsWith(Platform.multiline_comment_start)) {
+            else if (keyword.startsWith(platform.multiline_comment_start)) {
                 multiline_comment = true
             }
-            else if (keyword.contains(Platform.multiline_comment_end) && multiline_comment) {
+            else if (keyword.contains(platform.multiline_comment_end) && multiline_comment) {
                 multiline_comment = false
             }
             else {
                 when (keyword) {
-                    Platform.import_keyword -> import()
-                    Platform.lib_keyword -> lib()
-                    Platform.use_keyword -> use()
-                    Platform.include_keyword -> include()
-                    Platform.switch_keyword -> switch()
-                    Platform.typeof_keyword -> addTypeof()
+                    platform.import_keyword -> import()
+                    platform.lib_keyword -> lib()
+                    platform.use_keyword -> use()
+                    platform.include_keyword -> include()
+                    platform.switch_keyword -> switch()
+                    platform.typeof_keyword -> addTypeof()
+                    platform.expression_end -> continue@loop //thank you IntelliJ IDEA for '@loop'
+                    platform.expression_separator -> createError(SyntaxError(line, pos, "Expression separator cannot be in start of line"))
                     else -> pushLiteral()
                 }
             }
+            if (buffer.isNotEmpty()) buffer.clear()
         }
         if (errors.isNotEmpty()) {
             for (error: TangaraError in errors) {
@@ -114,7 +119,7 @@ class Parser {
 
     fun readDouble(): Double {
         if (skipWhitespaces()) {
-            while (current.isDigit() || current == '.') {
+            while (current.isDigit() || current == platform.float_separator) {
                 try {
                     buffer.append(current)
                     pos++
@@ -143,19 +148,31 @@ class Parser {
     fun readKeywordInStatement(): String {
         if (skipWhitespaces()) {
             val start: String = readKeyword()
-            if (start.startsWith(Platform.statement_start)) {
-                start.removePrefix(Platform.statement_start)
+            if (start.startsWith(platform.statement_start)) {
+                start.removePrefix(platform.statement_start)
             }
             else {
                 createError(SyntaxError(line, pos, "Open statement expression is not valid"))
+            }
+            pos += platform.statement_start.length //skip open statement by position
+            val keyword = readKeyword()
+            start.removePrefix(keyword)
+            pos += keyword.length
+            if (start == platform.statement_end) {
+                return keyword
+            }
+            else {
+                createError(SyntaxError(line, pos, "Close statement expression is not valid"))
             }
         }
         return ""
     }
 
     fun import() {
-        val platform = readKeyword()
-        println("${Platform.import_keyword} $platform")
+        val platform_name = readKeyword()
+        //platform =
+        code.add(0, platform.add_code)
+        println("${platform.import_keyword} $platform")
     }
 
     fun lib() = tc.linkLibrary(readKeyword())

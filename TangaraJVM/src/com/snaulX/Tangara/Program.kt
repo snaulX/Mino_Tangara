@@ -14,7 +14,7 @@ fun main(args: Array<String>) {
     else {
         val parser: Parser = Parser()
         val file: FileReader = FileReader(args[0])
-        parser.code = file.readLines()
+        parser.code.addAll(file.readLines())
         parser.parse(build = true)
     }
 }
