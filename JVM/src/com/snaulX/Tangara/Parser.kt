@@ -104,6 +104,7 @@ class Parser {
     fun use() = tc.importPackage(readKeyword())
 
     fun readInteger(): Int {
+        buffer.clear()
         if (skipWhitespaces()) {
             while (current.isDigit()) {
                 try {
@@ -118,6 +119,7 @@ class Parser {
     }
 
     fun readDouble(): Double {
+        buffer.clear()
         if (skipWhitespaces()) {
             while (current.isDigit() || current == platform.float_separator) {
                 try {
@@ -132,8 +134,9 @@ class Parser {
     }
 
     fun readKeyword(): String {
+        buffer.clear()
         if (skipWhitespaces()) {
-            while (current.isLetter()) {
+            while (current.isLetter() || current == '_') {
                 try {
                     buffer.append(current)
                     pos++
@@ -146,6 +149,7 @@ class Parser {
     }
 
     fun readKeywordInStatement(): String {
+        buffer.clear()
         if (skipWhitespaces()) {
             val start: String = readKeyword()
             if (start.startsWith(platform.statement_start)) {
@@ -168,6 +172,45 @@ class Parser {
         return ""
     }
 
+    fun startBlock() {
+        buffer.clear()
+        if (skipWhitespaces()) {
+            while (!current.isWhitespace()) {
+                try {
+                    buffer.append(current)
+                    pos++
+                } catch (e: Exception) {
+                    break
+                }
+            }
+            if (buffer.toString() == platform.block_start) {
+                tc.startBlock()
+            }
+            else {
+                createError(SyntaxError(line, pos, "'$buffer' is not start of block"))
+            }
+        }
+    }
+
+    fun endBlock() {
+        if (skipWhitespaces()) {
+            while (!current.isWhitespace()) {
+                try {
+                    buffer.append(current)
+                    pos++
+                } catch (e: Exception) {
+                    break
+                }
+            }
+            if (buffer.toString() == platform.block_end) {
+                tc.endBlock()
+            }
+            else {
+                createError(SyntaxError(line, pos, "'$buffer' is not end of block"))
+            }
+        }
+    }
+
     fun import() {
         val platform_name = readKeyword()
         //platform =
@@ -183,7 +226,10 @@ class Parser {
 
     fun include() = tc.include(readKeyword())
 
-    fun switch() = tc.createSwitch(readKeywordInStatement())
+    fun switch() {
+        tc.createSwitch(readKeywordInStatement())
+        startBlock()
+    }
 
     fun addTypeof() = tc.checkTypeof(readKeywordInStatement())
 }
