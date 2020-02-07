@@ -1,6 +1,8 @@
 package com.snaulX.Tangara
 
 import com.snaulX.TokensAPI.*
+import com.fasterxml.jackson.module.kotlin.*
+import java.io.File
 
 class Parser {
     var appname = ""
@@ -171,6 +173,12 @@ class Parser {
         return ""
     }
 
+    fun readString() {
+        if (!skipWhitespaces()) {
+            //pass
+        }
+    }
+
     fun startBlock() {
         buffer.clear()
         if (skipWhitespaces()) {
@@ -212,7 +220,8 @@ class Parser {
 
     fun import() {
         val platform_name = readKeyword()
-        //platform =
+        val mapper = jacksonObjectMapper()
+        platform = mapper.readValue<Platform>(File("platforms/$platform_name.json"))
         code.add(0, platform.add_code)
         println("${platform.import_keyword} $platform")
     }
@@ -230,7 +239,7 @@ class Parser {
         startBlock()
         val caseKeyword = readKeyword()
         if (caseKeyword == platform.case_keyword) {
-            //pass
+            tc.createCase(readKeyword())
         }
         else {
             createError(SyntaxError(line, pos, "$caseKeyword is not case keyword"))
