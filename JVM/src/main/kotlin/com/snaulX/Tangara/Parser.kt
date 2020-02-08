@@ -174,8 +174,75 @@ class Parser {
     }
 
     fun readString() {
+        buffer.clear()
         if (!skipWhitespaces()) {
-            //pass
+            if (current == platform.string_char) {
+                //So ok. Let`s parse string
+                var slash = false
+                while (current != platform.string_char && !slash) {
+                    try {
+                        slash = current == '\\'
+                        buffer.append(current)
+                        pos++
+                    }
+                    catch (e: IndexOutOfBoundsException) {
+                        createError(SyntaxError(line, pos, "String hasn`t end"))
+                        return
+                    }
+                }
+                tc.loadValue(buffer.toString())
+            }
+            else {
+                createError(SyntaxError(line, pos, "$current is not string character"))
+            }
+        }
+    }
+
+    fun readChar() {
+        buffer.clear()
+        if (!skipWhitespaces()) {
+            if (current == platform.char_char) {
+                //So ok. Let`s parse char
+                var result = ' '
+                pos++
+                if (current == '\\') {
+                    pos++
+                    buffer.append(current)
+                    if (current == 'u') {
+                        for (i: Int in 0..4) {
+                            pos++
+                            buffer.append(current)
+                        }
+                    }
+                    TODO("Make char with slashes")
+                }
+                else result = current
+                pos++
+                if (current == platform.char_char) {
+                    tc.loadValue(result)
+                }
+                else {
+                    createError(SyntaxError(line, pos, "$current is not char character"))
+                }
+            }
+            else {
+                createError(SyntaxError(line, pos, "$current is not char character"))
+            }
+        }
+    }
+
+    fun getValue() {
+        buffer.clear()
+        if (!skipWhitespaces()) {
+            if (current == platform.char_char) readChar()
+            else if (current == platform.string_char) readString()
+            else if (current.isDigit()) readInteger()
+            else {
+                var keyword = readKeyword()
+                if (current == platform.separator) {
+                    //pass
+                }
+            }
         }
     }
 

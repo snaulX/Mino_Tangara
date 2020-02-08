@@ -30,8 +30,8 @@ data class Platform (
     var statement_end: String = ")",
     var block_start: String = "{",
     var block_end: String = "}",
-    var string_char: String = "\"",
-    var char_char: String = "'",
+    var string_char: Char = '"',
+    var char_char: Char = '\'',
     var directive_start: String = "#",
     var single_comment: String = "//",
     var multiline_comment_start: String = "/*",
@@ -52,6 +52,7 @@ data class Platform (
     var extends_keyword: String = ":",
     var expression_end: String = ";",
     var float_separator: Char = '.',
+    var separator: Char = '.',
     var expression_separator: String = ",",
     var add_code: String = "import std;"
 )
