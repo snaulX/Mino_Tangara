@@ -173,7 +173,7 @@ class Parser {
         return ""
     }
 
-    fun readString() {
+    fun readString(): String {
         buffer.clear()
         if (!skipWhitespaces()) {
             if (current == platform.string_char) {
@@ -187,23 +187,24 @@ class Parser {
                     }
                     catch (e: IndexOutOfBoundsException) {
                         createError(SyntaxError(line, pos, "String hasn`t end"))
-                        return
+                        return ""
                     }
                 }
-                tc.loadValue(buffer.toString())
+                return buffer.toString()
             }
             else {
                 createError(SyntaxError(line, pos, "$current is not string character"))
             }
         }
+        return ""
     }
 
-    fun readChar() {
+    fun readChar(): Char {
         buffer.clear()
+        var result = ' '
         if (!skipWhitespaces()) {
             if (current == platform.char_char) {
                 //So ok. Let`s parse char
-                var result = ' '
                 pos++
                 if (current == '\\') {
                     pos++
@@ -229,20 +230,54 @@ class Parser {
                 createError(SyntaxError(line, pos, "$current is not char character"))
             }
         }
+        return result
+    }
+
+    private fun has(str: String): Boolean {
+        if (!skipWhitespaces()) {
+            for (i: Int in 0..str.length) {
+                try {
+                    if (current != str[i]) return false
+                    pos++
+                }
+                catch (e: IndexOutOfBoundsException) {
+                    return false
+                }
+            }
+            return true
+        }
+        return false
     }
 
     fun getValue() {
         buffer.clear()
         if (!skipWhitespaces()) {
-            if (current == platform.char_char) readChar()
-            else if (current == platform.string_char) readString()
-            else if (current.isDigit()) readInteger()
+            if (current == platform.char_char) tc.loadValue(readChar())
+            else if (current == platform.string_char) tc.loadValue(readString())
+            else if (current.isDigit()) tc.loadValue(readInteger())
             else {
-                var keyword = readKeyword()
-                if (current == platform.separator) {
-                    //pass
+                while (true) {
+                    if (has(platform.statement_start)) {
+                        //it`s a method
+                        parseMethod()
+                        break
+                    }
+                    pushLiteral()
+                    if (current != platform.separator) {
+                        break
+                    }
                 }
             }
+        }
+    }
+
+    fun parseMethod() {
+        tc.callMethod(buffer.toString())
+        var old_pos = pos
+        while (!has(platform.statement_end)) {
+            pos = old_pos
+            getValue()
+            old_pos = pos
         }
     }
 
