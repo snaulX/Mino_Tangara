@@ -90,7 +90,7 @@ class Parser {
                     platform.typeof_keyword -> addTypeof()
                     platform.expression_end -> continue@loop //thank you IntelliJ IDEA for '@loop'
                     platform.expression_separator -> createError(SyntaxError(line, pos, "Expression separator cannot be in start of line"))
-                    else -> pushLiteral()
+                    else -> pushLiteral(buffer.toString())
                 }
             }
             if (buffer.isNotEmpty()) buffer.clear()
@@ -152,22 +152,17 @@ class Parser {
     fun readKeywordInStatement(): String {
         buffer.clear()
         if (skipWhitespaces()) {
-            val start: String = readKeyword()
-            if (start.startsWith(platform.statement_start)) {
-                start.removePrefix(platform.statement_start)
+            if (has(platform.statement_start)) {
+                val keyword = readKeyword()
+                if (has(platform.statement_end)) {
+                    return keyword
+                }
+                else {
+                    createError(SyntaxError(line, pos, "Close statement expression is not valid"))
+                }
             }
             else {
                 createError(SyntaxError(line, pos, "Open statement expression is not valid"))
-            }
-            pos += platform.statement_start.length //skip open statement by position
-            val keyword = readKeyword()
-            start.removePrefix(keyword)
-            pos += keyword.length
-            if (start == platform.statement_end) {
-                return keyword
-            }
-            else {
-                createError(SyntaxError(line, pos, "Close statement expression is not valid"))
             }
         }
         return ""
@@ -262,13 +257,23 @@ class Parser {
                         parseMethod()
                         break
                     }
-                    pushLiteral()
+                    //pushLiteral()
                     if (current != platform.separator) {
                         break
                     }
+                    pos++
                 }
             }
         }
+    }
+
+    fun parseField(): String {
+        var field_name = ""
+        while (true) {
+            field_name.plus(readKeyword())
+            if (skipWhitespaces() && (current != platform.separator)) break
+        }
+        return field_name
     }
 
     fun parseMethod() {
@@ -332,19 +337,24 @@ class Parser {
 
     fun createError(error: TangaraError) = errors.add(error)
 
-    fun pushLiteral() = tc.callLiteral(buffer.toString())
+    fun pushLiteral(literal: String) = tc.callLiteral(literal)
 
     fun include() = tc.include(readKeyword())
 
     fun switch() {
-        tc.createSwitch(readKeywordInStatement())
-        startBlock()
-        val caseKeyword = readKeyword()
-        if (caseKeyword == platform.case_keyword) {
-            tc.createCase(readKeyword())
-        }
-        else {
-            createError(SyntaxError(line, pos, "$caseKeyword is not case keyword"))
+        if (has(platform.statement_start)) {
+            val var_name = parseField()
+            if (has(platform.statement_end)) {
+                tc.createSwitch(var_name)
+                startBlock()
+                val caseKeyword = readKeyword()
+                if (caseKeyword == platform.case_keyword) {
+                    tc.createCase(readKeyword())
+                }
+                else {
+                    createError(SyntaxError(line, pos, "$caseKeyword is not case keyword"))
+                }
+            }
         }
     }
 
