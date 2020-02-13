@@ -21,6 +21,7 @@ data class Platform (
     var variable_keyword: String = "var",
     var try_keyword: String = "try",
     var catch_keyword: String = "catch",
+    var finally_keyword: String = "finally",
     var if_keyword: String = "if",
     var else_keyword: String = "else",
     var while_keyword: String = "while",

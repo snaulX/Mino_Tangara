@@ -14,9 +14,7 @@ class Parser {
     val buffer: StringBuilder = StringBuilder()
     private val tc: TokensCreator = TokensCreator()
     private val current: Char
-        get() {
-            return code[line][pos]
-        }
+        get() = code[line][pos]
     var platform: Platform = Platform()
 
     fun skipWhitespaces(): Boolean {
@@ -37,12 +35,16 @@ class Parser {
         return true
     }
 
+    fun getToken(): Token {
+        return Token()
+    }
+
     fun parse() {
         var multiline_comment: Boolean = false
-        tc.setOutput("$appname.tokens")
         tc.header = HeaderType.Script
+        tc.setOutput("$appname.tokens")
         loop@ for (strline: String in code) {
-            //pass
+            tokens.add(getToken())
             if (buffer.isNotEmpty()) buffer.clear()
         }
         if (errors.isNotEmpty()) {
