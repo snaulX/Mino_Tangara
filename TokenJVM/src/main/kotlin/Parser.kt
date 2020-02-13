@@ -10,6 +10,7 @@ class Parser {
     private var pos = 0
     val code: MutableList<String> = mutableListOf()
     val errors: MutableList<TangaraError> = mutableListOf()
+    val tokens: MutableList<Token> = mutableListOf()
     val buffer: StringBuilder = StringBuilder()
     private val tc: TokensCreator = TokensCreator()
     private val current: Char
