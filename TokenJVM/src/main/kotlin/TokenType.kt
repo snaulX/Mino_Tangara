@@ -11,7 +11,7 @@ enum class TokenType {
     PUBLIC,
     PRIVATE,
     PROTECTED,
-    SEALED,
+    FINAL,
     STATIC,
     ABSTRACT,
     DATA,
@@ -77,5 +77,24 @@ enum class TokenType {
     POWER,
     INCREMENT,
     DECREMENT,
+    ASSIGMENT,
+    EQUALS,
+    LESS,
+    GREATER,
+    OR,
+    AND,
+    XOR,
+    /**
+     * Operator greater or equals
+     */
+    GORE,
+    /**
+     * Operator less or equals
+     */
+    LORE,
+    NOT,
+    NOT_EQUALS,
+    NEW,
+    THROW,
     EXPRESSION_SEPARATOR
 }
