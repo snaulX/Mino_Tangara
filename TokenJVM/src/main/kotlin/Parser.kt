@@ -2,7 +2,8 @@ package com.snaulX.Tangara
 
 import com.snaulX.TokensAPI.*
 import com.fasterxml.jackson.module.kotlin.*
-import java.io.File
+
+fun Char.isPunctuation(): Boolean = !(this.isLetterOrDigit() && this.isWhitespace())
 
 class Parser {
     var appname = ""
@@ -35,21 +36,37 @@ class Parser {
         return true
     }
 
-    fun getToken(): Token {
-        return Token()
+    fun import(platformName: String) {
+        //pass
+    }
+
+    fun read(word: String): Boolean {
+        val old_pos = pos
+        for (i in 0..word.length) {
+            pos++
+            if (current != word[i]) {
+                pos = old_pos
+                return false
+            }
+        }
+        return true
     }
 
     fun parse() {
-        var multiline_comment: Boolean = false
-        tc.header = HeaderType.Script
-        tc.setOutput("$appname.tokens")
-        loop@ for (strline: String in code) {
-            tokens.add(getToken())
-            if (buffer.isNotEmpty()) buffer.clear()
+        if (skipWhitespaces()) {
+            with(platform) {
+                when (current) {
+                    import_keyword[0] -> {
+                        if (read(import_keyword)) {
+                            //so good
+                        }
+                    }
+                }
+            }
         }
         if (errors.isNotEmpty()) {
             for (error: TangaraError in errors) {
-                error(error.getError())
+                println(error)
             }
         }
     }
