@@ -30,7 +30,7 @@ class Parser {
         get() = Regex("""${platform.lib_keyword}\s+(<?[\w\\/]+>?)\s*${platform.expression_end}""")
     val class_regex: Regex //public static class MyClass
         get() = Regex("""(${platform.public_keyword}\s+|${platform.private_keyword}\s+|${platform.protected_keyword}\s+)?(${platform.final_keyword}\s+|${platform.data_keyword}\s+|${platform.static_keyword}\s+|
-|${platform.abstract_keyword}\s+)?${platform.class_keyword}\s+(\w+)""")
+|${platform.abstract_keyword}\s+|${platform.enum_keyword}\s+)?${platform.class_keyword}\s+(\w+)""")
     val interface_regex: Regex //public interface MyInterface
         get() = Regex("""(${platform.public_keyword}\s+|${platform.private_keyword}\s+|${platform.protected_keyword}\s+)?${platform.interface_keyword}\s+(\w+)""")
 
@@ -106,6 +106,7 @@ class Parser {
             platform.final_keyword -> ClassType.SEALED
             platform.static_keyword -> ClassType.STATIC
             platform.abstract_keyword -> ClassType.ABSTRACT
+            platform.enum_keyword -> ClassType.ENUM
             else -> {
                 errors.add(SyntaxError(line, pos, "Syntax of class type is invalid"))
                 return null
