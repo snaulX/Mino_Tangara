@@ -17,11 +17,25 @@ class Parser {
     private val tc: TokensCreator = TokensCreator()
     private val new_code: MutableList<String> = mutableListOf()
     var platform: Platform = Platform()
+    private val current_line: String
+        get() = new_code[0]
+
+    //Regexes and examples
+    val import_regex: Regex //import std;
+            get() = Regex("""${platform.import_keyword}(\s+)(\w+)(\s*)${platform.expression_end}""")
+    val use_regex: Regex //use System; use java.lang;
+        get() = Regex("""${platform.use_keyword}(\s+)([\w.]+)(\s*)${platform.expression_end}""")
+    val include_regex: Regex //include mscorlib; include MyLib.dll; include libs/SomeLib.dll; include lib\Lib.dll;
+        get() = Regex("""${platform.include_keyword}(\s+)([\w.\\/]+)(\s*)${platform.expression_end}""")
+    val lib_regex: Regex //lib standart; lib <libs/SomeLib>; lib <lib\Lib>; lib game/engine;
+        get() = Regex("""${platform.lib_keyword}(\s+)(<?[\w\\/]+.?)(\s*)${platform.expression_end}""")
+
 
     fun skipWhitespaces(): Boolean {
-        new_code[line].trimStart()
-        if (new_code[line].isEmpty()) {
+        current_line.trimStart()
+        if (current_line.isEmpty()) {
             line++
+            new_code.removeAt(0)
             return if (line > code.size) {
                 false
             } else {
@@ -37,7 +51,12 @@ class Parser {
 
     fun parse() {
         while (skipWhitespaces()) {
-            //pass
+                when {
+                    import_regex.matches(current_line) -> import(import_regex.find(current_line)!!.destructured.component2())
+                    use_regex.matches(current_line) -> tc.importPackage(use_regex.find(current_line)!!.destructured.component2())
+                    include_regex.matches(current_line) -> tc.include(include_regex.find(current_line)!!.destructured.component2())
+                    lib_regex.matches(current_line) -> tc.linkLibrary(lib_regex.find(current_line)!!.destructured.component2())
+                }
         }
         if (errors.isNotEmpty()) {
             for (error: TangaraError in errors) {
