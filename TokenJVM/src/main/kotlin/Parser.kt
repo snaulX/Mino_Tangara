@@ -29,10 +29,10 @@ class Parser {
     val lib_regex: Regex //lib standart; lib <libs/SomeLib>; lib <lib\Lib>; lib game/engine;
         get() = Regex("""${platform.lib_keyword}\s+(<?[\w\\/]+.?)\s*${platform.expression_end}""")
     val class_regex: Regex //public static class MyClass
-        get() = Regex("""([${platform.public_keyword}\s+|${platform.private_keyword}\s+|${platform.protected_keyword}\s+]?)([${platform.final_keyword}\s+|${platform.data_keyword}\s+|${platform.static_keyword}\s+|
-|${platform.abstract_keyword}\s+]?)${platform.class_keyword}\s+(\w+)""")
+        get() = Regex("""(${platform.public_keyword}\s+|${platform.private_keyword}\s+|${platform.protected_keyword}\s+)?(${platform.final_keyword}\s+|${platform.data_keyword}\s+|${platform.static_keyword}\s+|
+|${platform.abstract_keyword}\s+)?${platform.class_keyword}\s+(\w+)""")
     val interface_regex: Regex //public interface MyInterface
-        get() = Regex("""([${platform.public_keyword}\s+|${platform.private_keyword}\s+|${platform.protected_keyword}\s+]?)${platform.interface_keyword}\s+(\w+)""")
+        get() = Regex("""(${platform.public_keyword}\s+|${platform.private_keyword}\s+|${platform.protected_keyword}\s+)?${platform.interface_keyword}\s+(\w+)""")
 
 
     fun skipWhitespaces(): Boolean {
@@ -58,39 +58,51 @@ class Parser {
         var hasCloseBracket = true
         while (skipWhitespaces()) {
             new_code[0] = new_code[0].trimEnd()
-                when {
-                    import_regex.matches(current_line) -> import(import_regex.find(current_line)!!.destructured.component1())
-                    use_regex.matches(current_line) -> tc.importPackage(use_regex.find(current_line)!!.destructured.component1())
-                    include_regex.matches(current_line) -> tc.include(include_regex.find(current_line)!!.destructured.component1())
-                    lib_regex.matches(current_line) -> tc.linkLibrary(lib_regex.find(current_line)!!.destructured.component1())
-                    class_regex.matches(current_line) -> {
-                        val (security, type, name) = class_regex.find(current_line)!!.destructured
-                        var sec = SecurityDegree.PUBLIC
-                        var t = ClassType.DEFAULT
-                        with(platform) {
-                            when (security) {
-                                "" -> sec = SecurityDegree.PUBLIC
-                                public_keyword -> sec = SecurityDegree.PUBLIC
-                                private_keyword -> sec = SecurityDegree.PRIVATE
-                                protected_keyword -> sec = SecurityDegree.PROTECTED
-                                else -> errors.add(SyntaxError(line, pos, "Syntax of security is invalid"))
-                            }
-                            when (type) {
-                                "" -> t = ClassType.DEFAULT
-                                data_keyword -> t = ClassType.DATA
-                                final_keyword -> t = ClassType.SEALED
-                                static_keyword -> t = ClassType.STATIC
-                                abstract_keyword -> t = ClassType.ABSTRACT
-                                else -> errors.add(SyntaxError(line, pos, "Syntax of class type is invalid"))
-                            }
-                        }
-                        tc.createClass(name, sec, t)
-                    }
+            when {
+                import_regex.matches(current_line) -> import(import_regex.find(current_line)!!.destructured.component1())
+                use_regex.matches(current_line) -> tc.importPackage(use_regex.find(current_line)!!.destructured.component1())
+                include_regex.matches(current_line) -> tc.include(include_regex.find(current_line)!!.destructured.component1())
+                lib_regex.matches(current_line) -> tc.linkLibrary(lib_regex.find(current_line)!!.destructured.component1())
+                class_regex.matches(current_line) -> {
+                    val (security, type, name) = class_regex.find(current_line)!!.destructured
+                    tc.createClass(name, checkSecurity(security)!!, checkClassType(type)!!)
                 }
+                interface_regex.matches(current_line) -> {
+                    val (security, name) = interface_regex.find(current_line)!!.destructured
+                    tc.createInterface(name, checkSecurity(security)!!)
+                }
+            }
         }
         if (errors.isNotEmpty()) {
             for (error: TangaraError in errors) {
                 println(error)
+            }
+        }
+    }
+
+    fun checkSecurity(sec: String): SecurityDegree? {
+        return when (sec) {
+            "" -> SecurityDegree.PUBLIC
+            platform.public_keyword -> SecurityDegree.PUBLIC
+            platform.private_keyword -> SecurityDegree.PRIVATE
+            platform.protected_keyword -> SecurityDegree.PROTECTED
+            else -> {
+                errors.add(SyntaxError(line, pos, "Syntax of security is invalid"))
+                return null
+            }
+        }
+    }
+
+    fun checkClassType(t: String): ClassType? {
+        return when (t) {
+            "" -> ClassType.DEFAULT
+            platform.data_keyword -> ClassType.DATA
+            platform.final_keyword -> ClassType.SEALED
+            platform.static_keyword -> ClassType.STATIC
+            platform.abstract_keyword -> ClassType.ABSTRACT
+            else -> {
+                errors.add(SyntaxError(line, pos, "Syntax of class type is invalid"))
+                return null
             }
         }
     }

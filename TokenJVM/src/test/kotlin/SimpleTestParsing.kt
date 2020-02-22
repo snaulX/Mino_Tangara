@@ -1,8 +1,8 @@
 import com.snaulX.Tangara.Parser
+import org.junit.jupiter.api.Test
 
-//@Test
+@Test
 fun `simple program using import`() {
-    val parser: Parser = Parser()
     parser.setCode("""
         import std;
         use System;
