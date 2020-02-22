@@ -21,19 +21,25 @@ class Parser {
 
     //Regexes and examples
     val import_regex: Regex //import std;
-            get() = Regex("""${platform.import_keyword}\s+(\w+)\s*${platform.expression_end}""")
+        get() = Regex("""${platform.import_keyword}\s+(\w+)\s*${platform.expression_end}""")
     val use_regex: Regex //use System; use java.lang;
         get() = Regex("""${platform.use_keyword}\s+([\w.]+)\s*${platform.expression_end}""")
     val include_regex: Regex //include mscorlib; include MyLib.dll; include libs/SomeLib.dll; include lib\Lib.dll;
         get() = Regex("""${platform.include_keyword}\s+([\w.\\/]+)\s*${platform.expression_end}""")
     val lib_regex: Regex //lib standart; lib <libs/SomeLib>; lib <lib\Lib>; lib game/engine;
-        get() = Regex("""${platform.lib_keyword}\s+(<?[\w\\/]+.?)\s*${platform.expression_end}""")
+        get() = Regex("""${platform.lib_keyword}\s+(<?[\w\\/]+>?)\s*${platform.expression_end}""")
     val class_regex: Regex //public static class MyClass
         get() = Regex("""(${platform.public_keyword}\s+|${platform.private_keyword}\s+|${platform.protected_keyword}\s+)?(${platform.final_keyword}\s+|${platform.data_keyword}\s+|${platform.static_keyword}\s+|
 |${platform.abstract_keyword}\s+)?${platform.class_keyword}\s+(\w+)""")
     val interface_regex: Regex //public interface MyInterface
         get() = Regex("""(${platform.public_keyword}\s+|${platform.private_keyword}\s+|${platform.protected_keyword}\s+)?${platform.interface_keyword}\s+(\w+)""")
 
+
+    fun setCode(setting_code: Collection<String>) {
+        code = setting_code.toList()
+        new_code.clear()
+        new_code.addAll(code)
+    }
 
     fun skipWhitespaces(): Boolean {
         current_line.trimStart()
@@ -105,11 +111,5 @@ class Parser {
                 return null
             }
         }
-    }
-
-    fun setCode(setting_code: Collection<String>) {
-        code = setting_code.toList()
-        new_code.clear()
-        new_code.addAll(code)
     }
 }
