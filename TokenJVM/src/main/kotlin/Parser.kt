@@ -12,7 +12,6 @@ class Parser {
     private var pos = 0
     var code: List<String> = listOf()
     val errors: MutableList<TangaraError> = mutableListOf()
-    val tokens: MutableList<Token> = mutableListOf()
     val buffer: StringBuilder = StringBuilder()
     private val tc: TokensCreator = TokensCreator()
     private val new_code: MutableList<String> = mutableListOf()
@@ -58,6 +57,7 @@ class Parser {
         var hasOpenBracket = false
         var hasCloseBracket = true
         while (skipWhitespaces()) {
+            new_code[0] = new_code[0].trimEnd()
                 when {
                     import_regex.matches(current_line) -> import(import_regex.find(current_line)!!.destructured.component1())
                     use_regex.matches(current_line) -> tc.importPackage(use_regex.find(current_line)!!.destructured.component1())
