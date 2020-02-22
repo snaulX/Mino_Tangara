@@ -22,13 +22,18 @@ class Parser {
 
     //Regexes and examples
     val import_regex: Regex //import std;
-            get() = Regex("""${platform.import_keyword}(\s+)(\w+)(\s*)${platform.expression_end}""")
+            get() = Regex("""${platform.import_keyword}\s+(\w+)\s*${platform.expression_end}""")
     val use_regex: Regex //use System; use java.lang;
-        get() = Regex("""${platform.use_keyword}(\s+)([\w.]+)(\s*)${platform.expression_end}""")
+        get() = Regex("""${platform.use_keyword}\s+([\w.]+)\s*${platform.expression_end}""")
     val include_regex: Regex //include mscorlib; include MyLib.dll; include libs/SomeLib.dll; include lib\Lib.dll;
-        get() = Regex("""${platform.include_keyword}(\s+)([\w.\\/]+)(\s*)${platform.expression_end}""")
+        get() = Regex("""${platform.include_keyword}\s+([\w.\\/]+)\s*${platform.expression_end}""")
     val lib_regex: Regex //lib standart; lib <libs/SomeLib>; lib <lib\Lib>; lib game/engine;
-        get() = Regex("""${platform.lib_keyword}(\s+)(<?[\w\\/]+.?)(\s*)${platform.expression_end}""")
+        get() = Regex("""${platform.lib_keyword}\s+(<?[\w\\/]+.?)\s*${platform.expression_end}""")
+    val class_regex: Regex //public static class MyClass
+        get() = Regex("""([${platform.public_keyword}\s+|${platform.private_keyword}\s+|${platform.protected_keyword}\s+]?)([${platform.final_keyword}\s+|${platform.data_keyword}\s+|${platform.static_keyword}\s+|
+|${platform.abstract_keyword}\s+]?)${platform.class_keyword}\s+(\w+)""")
+    val interface_regex: Regex //public interface MyInterface
+        get() = Regex("""([${platform.public_keyword}\s+|${platform.private_keyword}\s+|${platform.protected_keyword}\s+]?)${platform.interface_keyword}\s+(\w+)""")
 
 
     fun skipWhitespaces(): Boolean {
@@ -50,12 +55,37 @@ class Parser {
     }
 
     fun parse() {
+        var hasOpenBracket = false
+        var hasCloseBracket = true
         while (skipWhitespaces()) {
                 when {
-                    import_regex.matches(current_line) -> import(import_regex.find(current_line)!!.destructured.component2())
-                    use_regex.matches(current_line) -> tc.importPackage(use_regex.find(current_line)!!.destructured.component2())
-                    include_regex.matches(current_line) -> tc.include(include_regex.find(current_line)!!.destructured.component2())
-                    lib_regex.matches(current_line) -> tc.linkLibrary(lib_regex.find(current_line)!!.destructured.component2())
+                    import_regex.matches(current_line) -> import(import_regex.find(current_line)!!.destructured.component1())
+                    use_regex.matches(current_line) -> tc.importPackage(use_regex.find(current_line)!!.destructured.component1())
+                    include_regex.matches(current_line) -> tc.include(include_regex.find(current_line)!!.destructured.component1())
+                    lib_regex.matches(current_line) -> tc.linkLibrary(lib_regex.find(current_line)!!.destructured.component1())
+                    class_regex.matches(current_line) -> {
+                        val (security, type, name) = class_regex.find(current_line)!!.destructured
+                        var sec = SecurityDegree.PUBLIC
+                        var t = ClassType.DEFAULT
+                        with(platform) {
+                            when (security) {
+                                "" -> sec = SecurityDegree.PUBLIC
+                                public_keyword -> sec = SecurityDegree.PUBLIC
+                                private_keyword -> sec = SecurityDegree.PRIVATE
+                                protected_keyword -> sec = SecurityDegree.PROTECTED
+                                else -> errors.add(SyntaxError(line, pos, "Syntax of security is invalid"))
+                            }
+                            when (type) {
+                                "" -> t = ClassType.DEFAULT
+                                data_keyword -> t = ClassType.DATA
+                                final_keyword -> t = ClassType.SEALED
+                                static_keyword -> t = ClassType.STATIC
+                                abstract_keyword -> t = ClassType.ABSTRACT
+                                else -> errors.add(SyntaxError(line, pos, "Syntax of class type is invalid"))
+                            }
+                        }
+                        tc.createClass(name, sec, t)
+                    }
                 }
         }
         if (errors.isNotEmpty()) {
