@@ -42,7 +42,7 @@ class Parser {
         get() = Regex("""($security_regex)?${platform.enum_keyword}\s+(\w+)""")
     val var_regex: Regex //public final var myVar; private var string str = "Hello World";
         get() = Regex("""($security_regex)?\s+(${platform.static_keyword}|${platform.final_keyword})?\s+
-${platform.variable_keyword}\s+(\w*)""")
+${platform.variable_keyword}\s+(\w*)\s+(\w+)""")
 
 
     fun setCode(setting_code: Collection<String>) {
@@ -90,6 +90,14 @@ ${platform.variable_keyword}\s+(\w*)""")
                 enum_regex.matches(current_line) -> {
                     val (security, name) = enum_regex.find(current_line)!!.destructured
                     tc.createEnum(name, checkSecurity(security)!!)
+                }
+                var_regex.matches(current_line) -> {
+                    val (security, var_type, type, name) = var_regex.find(current_line)!!.destructured
+                    when (var_type) {
+                        platform.static_keyword -> tc.createStaticField(name, type, checkSecurity(security)!!)
+                        platform.final_keyword -> tc.createFinalField(name, type, checkSecurity(security)!!)
+                        else -> tc.createField(name, type, checkSecurity(security)!!)
+                    }
                 }
             }
         }

@@ -59,4 +59,7 @@ fun `test lib regexp`() {
     assertTrue(parser.lib_regex.matches("lib <mylib>;"))
     assertTrue(parser.lib_regex.matches("lib <libs/mylib>;"))
     assertTrue(parser.lib_regex.matches("lib game\\engine;"))
+    assertFalse(parser.lib_regex.matches("lib \"mylib\";"))
+    assertFalse(parser.lib_regex.matches("lib 'mylib';"))
+    assertFalse(parser.lib_regex.matches("lib mylib.tokens;"))
 }
