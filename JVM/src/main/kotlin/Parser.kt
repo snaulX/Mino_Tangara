@@ -16,10 +16,16 @@ class Parser {
     private val tc: TokensCreator = TokensCreator()
     private val new_code: MutableList<String> = mutableListOf()
     var platform: Platform = Platform()
-    private val current_line: String
+    private var current_line: String
+        set(v) { new_code[0] = v }
         get() = new_code[0]
 
-    //Regexes and examples
+    //Regular expressions for parsing and examples for it
+    val security_regex: Regex
+        get() = Regex("""${platform.public_keyword}\s+|${platform.private_keyword}\s+|${platform.protected_keyword}\s+""")
+    val classType_regex: Regex
+        get() = Regex("""${platform.final_keyword}\s+|${platform.data_keyword}\s+|${platform.static_keyword}
+\s+|${platform.abstract_keyword}\s+|${platform.enum_keyword}\s+""")
     val import_regex: Regex //import std;
         get() = Regex("""${platform.import_keyword}\s+(\w+)\s*${platform.expression_end}""")
     val use_regex: Regex //use System; use java.lang;
@@ -29,10 +35,14 @@ class Parser {
     val lib_regex: Regex //lib standart; lib <libs/SomeLib>; lib <lib\Lib>; lib game/engine;
         get() = Regex("""${platform.lib_keyword}\s+(<?[\w\\/]+>?)\s*${platform.expression_end}""")
     val class_regex: Regex //public static class MyClass
-        get() = Regex("""(${platform.public_keyword}\s+|${platform.private_keyword}\s+|${platform.protected_keyword}\s+)?(${platform.final_keyword}\s+|${platform.data_keyword}\s+|${platform.static_keyword}\s+|
-|${platform.abstract_keyword}\s+|${platform.enum_keyword}\s+)?${platform.class_keyword}\s+(\w+)""")
+        get() = Regex("""($security_regex)?($classType_regex)?${platform.class_keyword}\s+(\w+)""")
     val interface_regex: Regex //public interface MyInterface
-        get() = Regex("""(${platform.public_keyword}\s+|${platform.private_keyword}\s+|${platform.protected_keyword}\s+)?${platform.interface_keyword}\s+(\w+)""")
+        get() = Regex("""($security_regex)?${platform.interface_keyword}\s+(\w+)""")
+    val enum_regex: Regex //public enum MyEnum
+        get() = Regex("""($security_regex)?${platform.enum_keyword}\s+(\w+)""")
+    val var_regex: Regex //public final var myVar; private var string str = "Hello World";
+        get() = Regex("""($security_regex)?\s+(${platform.static_keyword}|${platform.final_keyword})?\s+
+${platform.variable_keyword}\s+(\w*)""")
 
 
     fun setCode(setting_code: Collection<String>) {
@@ -63,7 +73,7 @@ class Parser {
         var hasOpenBracket = false
         var hasCloseBracket = true
         while (skipWhitespaces()) {
-            new_code[0] = new_code[0].trimEnd()
+            current_line = current_line.trimEnd()
             when {
                 import_regex.matches(current_line) -> import(import_regex.find(current_line)!!.destructured.component1())
                 use_regex.matches(current_line) -> tc.importPackage(use_regex.find(current_line)!!.destructured.component1())
@@ -76,6 +86,10 @@ class Parser {
                 interface_regex.matches(current_line) -> {
                     val (security, name) = interface_regex.find(current_line)!!.destructured
                     tc.createInterface(name, checkSecurity(security)!!)
+                }
+                enum_regex.matches(current_line) -> {
+                    val (security, name) = enum_regex.find(current_line)!!.destructured
+                    tc.createEnum(name, checkSecurity(security)!!)
                 }
             }
         }
