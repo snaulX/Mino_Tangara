@@ -81,22 +81,22 @@ ${platform.variable_keyword}\s+(\w*)\s+(\w+)""")
                 lib_regex.matches(current_line) -> tc.linkLibrary(lib_regex.find(current_line)!!.destructured.component1())
                 class_regex.matches(current_line) -> {
                     val (security, type, name) = class_regex.find(current_line)!!.destructured
-                    tc.createClass(name, checkSecurity(security)!!, checkClassType(type)!!)
+                    tc.createClass(name, checkSecurity(security) ?: SecurityDegree.PUBLIC, checkClassType(type) ?: ClassType.DEFAULT)
                 }
                 interface_regex.matches(current_line) -> {
                     val (security, name) = interface_regex.find(current_line)!!.destructured
-                    tc.createInterface(name, checkSecurity(security)!!)
+                    tc.createInterface(name, checkSecurity(security) ?: SecurityDegree.PUBLIC)
                 }
                 enum_regex.matches(current_line) -> {
                     val (security, name) = enum_regex.find(current_line)!!.destructured
-                    tc.createEnum(name, checkSecurity(security)!!)
+                    tc.createEnum(name, checkSecurity(security) ?: SecurityDegree.PUBLIC)
                 }
                 var_regex.matches(current_line) -> {
                     val (security, var_type, type, name) = var_regex.find(current_line)!!.destructured
                     when (var_type) {
-                        platform.static_keyword -> tc.createStaticField(name, type, checkSecurity(security)!!)
-                        platform.final_keyword -> tc.createFinalField(name, type, checkSecurity(security)!!)
-                        else -> tc.createField(name, type, checkSecurity(security)!!)
+                        platform.static_keyword -> tc.createStaticField(name, type, checkSecurity(security) ?: SecurityDegree.PUBLIC)
+                        platform.final_keyword -> tc.createFinalField(name, type, checkSecurity(security) ?: SecurityDegree.PUBLIC)
+                        else -> tc.createField(name, type, checkSecurity(security) ?: SecurityDegree.PUBLIC)
                     }
                 }
             }

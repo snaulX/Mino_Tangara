@@ -4,12 +4,17 @@ import java.io.FileReader
 
 fun main(args: Array<String>) {
     if (args.isEmpty()) {
-        println("""
+        /*println("""
             Tangara 2020-2020
             Author: snaulX
             All copyrights reserved.
             GitHub repository: https://github.com/snaulX/Tangara
-        """.trimIndent())
+        """.trimIndent())*/
+        //for test in IDE
+        val parser: Parser = Parser()
+        val code: List<String> = listOf("public final class MyClass")
+        parser.setCode(code)
+        parser.parse()
     }
     else {
         val parser: Parser = Parser()
