@@ -5,8 +5,6 @@ import com.fasterxml.jackson.module.kotlin.*
 import java.io.File
 import java.lang.StringBuilder
 
-fun Char.isPunctuation(): Boolean = !(this.isJavaIdentifierPart() && this.isWhitespace())
-
 class Parser {
     var appname = ""
     private var line = 0
@@ -16,10 +14,18 @@ class Parser {
     var platform: Platform = Platform()
     val lexemes: MutableList<String> = mutableListOf()
     private val buffer: StringBuilder = StringBuilder()
-    @ExperimentalUnsignedTypes
-    private val pos: UInt = 1u
+    private var pos: Int = 0
     private val cur: Char
-        get() = code[pos.toInt()]
+        get() = code[pos]
+    private val prev: Char
+        get() {
+            return try {
+                code[pos - 1]
+            }
+            catch (e: StringIndexOutOfBoundsException) {
+                ' '
+            }
+        }
 
     infix fun import(platformName: String) {
         platform = jacksonObjectMapper().readValue<Platform>(File("platforms/$platformName.json"))
@@ -36,22 +42,24 @@ class Parser {
             }
         }
 
-        while (pos <= code.length.toUInt()) {
+        while (pos < code.length) {
             when {
                 cur.isWhitespace() -> {
-                    if (cur == '\n') tc.incLine()
+                    if (cur == '\n') lexemes.add("\n") //for single line comments and if end_expression is nothing
                     clearBuffer()
-                }
-                cur.isPunctuation() -> {
-                    clearBuffer()
-                    lexemes.add(cur.toString())
                 }
                 cur.isJavaIdentifierPart() -> {
+                    if (!prev.isJavaIdentifierPart())  clearBuffer()
                     buffer.append(cur)
                 } //for digits, letters and _
+                else -> {
+                    if (prev.isWhitespace() || prev.isJavaIdentifierPart()) clearBuffer()
+                    buffer.append(cur)
+                } //punctuation
             }
-            pos.inc() //pos++
+            pos++
         }
+        clearBuffer()
     }
 
     fun parseLexemes() {
@@ -59,7 +67,11 @@ class Parser {
     }
 
     fun parse() {
+        tc.setOutput("$appname.tokens")
         createLexemes()
+        lexemes.forEach {
+            print("$it, ")
+        } //test: passed
         if (errors.isNotEmpty()) {
             for (error: TangaraError in errors) {
                 println(error)
