@@ -16,8 +16,14 @@ fun main(args: Array<String>) {
         parser.code = """
             import std; //importing platform std
             lib standart; //link tokens library standart
-            use System; //usiing namespace System
+            use System; //using namespace System
+            include mscorlib; //including base library of .NET
             Console.WriteLine("Hello World"); //printing Hello World on the console
+            /*
+            Multiline comment
+            is
+            work
+            */
         """.trimIndent()
         parser.parse()
     }

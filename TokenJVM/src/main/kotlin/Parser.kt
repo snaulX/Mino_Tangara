@@ -82,8 +82,8 @@ class Parser {
         while (pos < code.length) {
             when {
                 cur.isWhitespace() -> {
-                    if (cur == '\n') lexemes.add("\n") //for single line comments and if end_expression is nothing
                     clearBuffer()
+                    if (cur == '\n') lexemes.add("\n") //for single line comments and if end_expression is nothing
                 }
                 cur.isJavaIdentifierPart() -> {
                     if (!prev.isJavaIdentifierPart())  clearBuffer()
@@ -106,11 +106,15 @@ class Parser {
     fun parseLexemes() {
         var security: SecurityDegree = SecurityDegree.PUBLIC
         var single_comment: Boolean = false
+        var ml_comment: Boolean = false
         pos = 0
         if (buffer.isNotEmpty()) buffer.clear()
         while (pos < lexemes.size) {
             if (single_comment) {
                 if (cur_lexem == "\n") single_comment = false
+            }
+            else if (ml_comment) {
+                if (cur_lexem == platform.multiline_comment_end) ml_comment = false
             }
             else {
                 with(platform) {
@@ -131,7 +135,6 @@ class Parser {
                             }
                             tc.importPackage(buffer.toString())
                             buffer.clear()
-                            pos++
                             checkExpressionEnd {
                                 errors.add(SyntaxError(line, "'$use_keyword' expression haven`t end"))
                             }
@@ -144,7 +147,6 @@ class Parser {
                             }
                             tc.include(buffer.toString())
                             buffer.clear()
-                            pos++
                             checkExpressionEnd {
                                 errors.add(SyntaxError(line, "'$include_keyword' expression haven`t end"))
                             }
@@ -170,12 +172,19 @@ class Parser {
                                 errors.add(SyntaxError(line, "'$lib_keyword' expression haven`t end"))
                             }
                         }
-                        single_comment_start -> single_comment = true
+                        single_comment_start -> {
+                            single_comment = true
+                        }
+                        multiline_comment_start -> {
+                            ml_comment = true
+                        }
                         "\n" -> {
                             tc.incLine()
                             line++
                         }
-                        else -> tc.callLiteral(cur_lexem)
+                        else -> {
+                            tc.callLiteral(cur_lexem)
+                        }
                     }
                 }
             }
@@ -189,6 +198,7 @@ class Parser {
         lexemes.forEach {
             print("$it, ")
         } //test: passed
+        println()
         parseLexemes()
         if (errors.isNotEmpty()) {
             for (error: TangaraError in errors) {
