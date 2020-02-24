@@ -44,7 +44,7 @@ data class Platform (
     var string_char: String = "\"",
     var char_char: String = "'",
     var directive_start: String = "#",
-    var single_comment: String = "//",
+    var single_comment_start: String = "//",
     var multiline_comment_start: String = "/*",
     var multiline_comment_end: String = "*/",
     var typeof_keyword: String = "typeof",

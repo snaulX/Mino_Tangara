@@ -14,7 +14,7 @@ fun main(args: Array<String>) {
         val parser: Parser = Parser()
         parser.appname = "TestMinoApp"
         parser.code = """
-            //import std; //importing platform std
+            import std; //importing platform std
             lib standart; //link tokens library standart
             use System; //usiing namespace System
             Console.WriteLine("Hello World"); //printing Hello World on the console
