@@ -11,6 +11,4 @@ fun `test lexerize of simple program`() {
         lib standart; //line
     """.trimIndent()
     parser.lexerize()
-    assertEquals(parser.lexemes, listOf<String>("import", "std", ";", "\n",
-        "lib", "standart", ";", "//", "line", "\n"))
 }

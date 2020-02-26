@@ -2,6 +2,7 @@ package com.snaulX.Tangara
 
 import com.snaulX.TokensAPI.*
 import com.fasterxml.jackson.module.kotlin.*
+import com.sun.org.apache.xpath.internal.operations.Bool
 import java.io.*
 import java.lang.StringBuilder
 
@@ -12,7 +13,6 @@ class Parser {
     val errors: MutableList<TangaraError> = mutableListOf()
     private val tc: TokensCreator = TokensCreator()
     var platform: Platform = Platform()
-    val lexemes: MutableList<String> = mutableListOf()
     private val buffer: StringBuilder = StringBuilder()
     private var pos: Int = 0
     private val cur: Char
@@ -26,8 +26,6 @@ class Parser {
                 ' '
             }
         }
-    private val cur_lexem: String
-        get() = lexemes[pos]
 
     infix fun import(platformName: String) {
         try {
@@ -68,22 +66,86 @@ class Parser {
         }
     }
 
+    fun checkExpressionEnd(curLexem: String, onNotExpression: () -> Unit, onTrueExpression: () -> Unit = {}) {
+        val i = curLexem.indexOf(platform.expression_end)
+        if (i >= 0) onTrueExpression
+        else onNotExpression
+    }
+
     fun lexerize() {
+        var singleComment: Boolean = false
+        var multiComment: Boolean = false
+        var hasString: Boolean = false
+        var isLib: Boolean = false
+        var isImport: Boolean = false
+        var isUse: Boolean = false
+        var isInclude: Boolean = false
+        var security: SecurityDegree?
+        var identifer: Identifer?
+
+        /**
+         * Push [lexem] to TokensCreator
+         */
+        fun parseLexem(lexem: String) {
+            when {
+                singleComment -> {
+                    if (lexem == "\n") singleComment = false
+                }
+                multiComment -> {
+                    if (lexem == platform.multiline_comment_end) multiComment = false
+                }
+                isImport -> {
+                    val i = lexem.indexOf(platform.expression_end)
+                    if (i >= 0) import(Regex("""(\w+\d*)""").find(lexem)!!.destructured.component1())
+                    isImport = false
+                }
+                isInclude -> {
+                    checkExpressionEnd(lexem, {
+                        buffer.append(Regex("""\w+\d*|\.|\\|/""").find(lexem)!!.destructured.component1())
+                    }, {
+                        tc.include(buffer.toString())
+                        buffer.clear()
+                        isInclude = false
+                    })
+                }
+                else -> {
+                    platform.run {
+                        when (lexem) {
+                            import_keyword -> isImport = true
+                            single_comment_start -> singleComment = true
+                            multiline_comment_start -> multiComment = true
+                        }
+                    }
+                }
+            }
+        }
         /**
          * Check on empty and pushing to lexemes value from buffer and clear it
          */
         fun clearBuffer() {
             if (buffer.isNotEmpty()) {
-                lexemes.add(buffer.toString())
+                val buf: String = buffer.toString()
+                if (buf.contains(platform.string_char)) {
+                    val ind: Int = buf.indexOf(platform.string_char)
+                    if (!(hasString && buf[ind - 1] == '\\'))
+                        hasString = !hasString
+                }
+                parseLexem(buf)
                 buffer.clear()
             }
         }
 
         while (pos < code.length) {
             when {
+                hasString -> {
+                    buffer.append(cur)
+                }
                 cur.isWhitespace() -> {
                     clearBuffer()
-                    if (cur == '\n') lexemes.add("\n") //for single line comments and if end_expression is nothing
+                    if (cur == '\n') {
+                        tc.incLine()
+                        parseLexem("\n")
+                    } //for single line comments and if end_expression is nothing
                 }
                 cur.isJavaIdentifierPart() -> {
                     if (!prev.isJavaIdentifierPart())  clearBuffer()
@@ -99,107 +161,9 @@ class Parser {
         clearBuffer()
     }
 
-    fun checkExpressionEnd(onError: () -> Unit) {
-        if (cur_lexem != platform.expression_end) onError
-    }
-
-    fun parseLexemes() {
-        var security: SecurityDegree = SecurityDegree.PUBLIC
-        var single_comment: Boolean = false
-        var ml_comment: Boolean = false
-        pos = 0
-        if (buffer.isNotEmpty()) buffer.clear()
-        while (pos < lexemes.size) {
-            if (single_comment) {
-                if (cur_lexem == "\n") single_comment = false
-            }
-            else if (ml_comment) {
-                if (cur_lexem == platform.multiline_comment_end) ml_comment = false
-            }
-            else {
-                with(platform) {
-                    when (cur_lexem) {
-                        import_keyword -> {
-                            pos++
-                            import(cur_lexem)
-                            pos++
-                            checkExpressionEnd {
-                                errors.add(SyntaxError(line, "'$import_keyword' expression haven`t end"))
-                            }
-                        }
-                        use_keyword -> {
-                            pos++
-                            while (Regex("""\w+\d*|\.""").matches(cur_lexem)) {
-                                buffer.append(cur_lexem)
-                                pos++
-                            }
-                            tc.importPackage(buffer.toString())
-                            buffer.clear()
-                            checkExpressionEnd {
-                                errors.add(SyntaxError(line, "'$use_keyword' expression haven`t end"))
-                            }
-                        }
-                        include_keyword -> {
-                            pos++
-                            while (Regex("""\w+\d*|\.|\\|/""").matches(cur_lexem)) {
-                                buffer.append(cur_lexem)
-                                pos++
-                            }
-                            tc.include(buffer.toString())
-                            buffer.clear()
-                            checkExpressionEnd {
-                                errors.add(SyntaxError(line, "'$include_keyword' expression haven`t end"))
-                            }
-                        }
-                        lib_keyword -> {
-                            pos++
-                            val local_path: Boolean = cur_lexem == "<"
-                            if (local_path) {
-                                buffer.append(cur_lexem)
-                                pos++
-                            }
-                            while (Regex("""\w+\d*|\.|\|/""").matches(cur_lexem)) {
-                                buffer.append(cur_lexem)
-                                pos++
-                            }
-                            if (local_path) {
-                                buffer.append(cur_lexem)
-                                pos++
-                            }
-                            tc.linkLibrary(buffer.toString())
-                            buffer.clear()
-                            checkExpressionEnd {
-                                errors.add(SyntaxError(line, "'$lib_keyword' expression haven`t end"))
-                            }
-                        }
-                        single_comment_start -> {
-                            single_comment = true
-                        }
-                        multiline_comment_start -> {
-                            ml_comment = true
-                        }
-                        "\n" -> {
-                            tc.incLine()
-                            line++
-                        }
-                        else -> {
-                            tc.callLiteral(cur_lexem)
-                        }
-                    }
-                }
-            }
-            pos++
-        }
-    }
-
     fun parse() {
         tc.setOutput("$appname.tokens")
         lexerize()
-        lexemes.forEach {
-            print("$it, ")
-        } //test: passed
-        println()
-        parseLexemes()
         if (errors.isNotEmpty()) {
             for (error: TangaraError in errors) {
                 println(error)
