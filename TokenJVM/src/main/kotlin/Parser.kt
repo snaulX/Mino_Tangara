@@ -79,14 +79,15 @@ class Parser {
         var isImport: Boolean = false
         var isUse: Boolean = false
         var isInclude: Boolean = false
-        var isClass: Boolean = false //is initilization of class
+        var isClass: Boolean = false
         var isVar: Boolean = false
         var isFunction: Boolean = false
         var security: SecurityDegree = SecurityDegree.PUBLIC
         var identifer: Identifer = Identifer.DEFAULT
-        var name: String = ""
         var levelStatement: Byte = 0 //level of statement
         var levelBlock: Byte = 0 //level of block
+        var typeName: String = ""
+        var name: String = ""
 
         /**
          * Push [lexem] to TokensCreator
@@ -133,8 +134,21 @@ class Parser {
                     })
                 }
                 isClass -> {
-                    if (name.isEmpty()) name = lexem
+                    tc.createClass(lexem, security, identifer.classType)
                     isClass = false
+                }
+                isFunction -> {
+                    if (typeName.isEmpty()) typeName = lexem
+                    else {
+                        var ft: FuncType? = identifer.funcType
+                        if (ft == null) {
+                            errors.add(SyntaxError(line, "Not valid type of function"))
+                        }
+                        else {
+                            tc.createMethod(lexem, typeName, security, ft)
+                        }
+                        isFunction = false
+                    }
                 }
                 else -> {
                     platform.run {
@@ -158,6 +172,7 @@ class Parser {
                             statement_end -> levelStatement--
                             block_start -> levelBlock++
                             block_end -> levelBlock--
+                            "\n" -> tc.incLine()
                             else -> tc.callLiteral(lexem)
                         }
                     }
@@ -187,10 +202,8 @@ class Parser {
                 }
                 cur.isWhitespace() -> {
                     clearBuffer()
-                    if (cur == '\n') {
-                        tc.incLine()
-                        parseLexem("\n")
-                    } //for single line comments and if end_expression is nothing
+                    if (cur == '\n')
+                        parseLexem("\n") //for correct printing errors and single line comments
                 }
                 cur.isJavaIdentifierPart() -> {
                     if (!prev.isJavaIdentifierPart())  clearBuffer()

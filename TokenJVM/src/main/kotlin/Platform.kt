@@ -85,6 +85,5 @@ data class Platform (
     var not_operator: String = "!",
     var not_equals_operator: String = "!=",
     var new_operator: String = "new",
-    var throw_operator: String = "throw",
-    var add_code: String = "import std;"
+    var throw_operator: String = "throw"
 )
