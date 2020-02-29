@@ -19,6 +19,8 @@ fun main(args: Array<String>) {
             use System; //using namespace System
             include mscorlib; //including base library of .NET
             Console.WriteLine("Hello World"); //printing Hello World on the console
+            class MyClass; //init class with name MyClass
+            import mytest;
             /*
             Multiline comment
             is

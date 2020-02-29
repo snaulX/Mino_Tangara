@@ -2,7 +2,6 @@ package com.snaulX.Tangara
 
 import com.snaulX.TokensAPI.*
 import com.fasterxml.jackson.module.kotlin.*
-import com.sun.org.apache.xpath.internal.operations.Bool
 import java.io.*
 import java.lang.StringBuilder
 
@@ -80,8 +79,14 @@ class Parser {
         var isImport: Boolean = false
         var isUse: Boolean = false
         var isInclude: Boolean = false
-        var security: SecurityDegree?
-        var identifer: Identifer?
+        var isClass: Boolean = false //is initilization of class
+        var isVar: Boolean = false
+        var isFunction: Boolean = false
+        var security: SecurityDegree = SecurityDegree.PUBLIC
+        var identifer: Identifer = Identifer.DEFAULT
+        var name: String = ""
+        var levelStatement: Byte = 0 //level of statement
+        var levelBlock: Byte = 0 //level of block
 
         /**
          * Push [lexem] to TokensCreator
@@ -98,15 +103,38 @@ class Parser {
                     val i = lexem.indexOf(platform.expression_end)
                     if (i >= 0) import(Regex("""(\w+\d*)""").find(lexem)!!.destructured.component1())
                     isImport = false
+                    println(platform.import_keyword)
                 }
                 isInclude -> {
                     checkExpressionEnd(lexem, {
-                        buffer.append(Regex("""\w+\d*|\.|\\|/""").find(lexem)!!.destructured.component1())
+                        buffer.append(Regex("""(\w+\d*|\.|\\|/)""").find(lexem)!!.destructured.component1())
                     }, {
                         tc.include(buffer.toString())
                         buffer.clear()
                         isInclude = false
                     })
+                }
+                isUse -> {
+                    checkExpressionEnd(lexem, {
+                        buffer.append(Regex("""(\w+\d*|\.)""").find(lexem)!!.destructured.component1())
+                    }, {
+                        tc.importPackage(buffer.toString())
+                        buffer.clear()
+                        isUse = false
+                    })
+                }
+                isLib -> {
+                    checkExpressionEnd(lexem, {
+                        buffer.append(Regex("""(\w+\d*|\.|\\|/)""").find(lexem)!!.destructured.component1())
+                    }, {
+                        tc.linkLibrary(buffer.toString())
+                        buffer.clear()
+                        isLib = false
+                    })
+                }
+                isClass -> {
+                    if (name.isEmpty()) name = lexem
+                    isClass = false
                 }
                 else -> {
                     platform.run {
@@ -114,6 +142,23 @@ class Parser {
                             import_keyword -> isImport = true
                             single_comment_start -> singleComment = true
                             multiline_comment_start -> multiComment = true
+                            include_keyword -> isInclude = true
+                            use_keyword -> isUse = true
+                            lib_keyword -> isLib = true
+                            public_keyword -> security = SecurityDegree.PUBLIC
+                            private_keyword -> security = SecurityDegree.PRIVATE
+                            protected_keyword -> security = SecurityDegree.PROTECTED
+                            final_keyword -> identifer = Identifer.FINAL
+                            data_keyword -> identifer = Identifer.DATA
+                            enum_keyword -> identifer = Identifer.ENUM
+                            static_keyword -> identifer = Identifer.STATIC
+                            abstract_keyword -> identifer = Identifer.ABSTRACT
+                            class_keyword -> isClass = true
+                            statement_start -> levelStatement++
+                            statement_end -> levelStatement--
+                            block_start -> levelBlock++
+                            block_end -> levelBlock--
+                            else -> tc.callLiteral(lexem)
                         }
                     }
                 }
@@ -153,6 +198,9 @@ class Parser {
                 } //for digits, letters and _
                 else -> {
                     if (prev.isWhitespace() || prev.isJavaIdentifierPart()) clearBuffer()
+                    platform::javaClass.invoke().fields
+                        .filter { it.get(platform).toString() == buffer.toString() }
+                        .forEach { clearBuffer() }  //TODO("Повысить производительность")
                     buffer.append(cur)
                 } //punctuation
             }

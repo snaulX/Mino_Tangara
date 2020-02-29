@@ -1,4 +1,9 @@
 {
     "function_keyword": "fun",
-    "class_keyword": "class"
+    "class_keyword": "class",
+    "variable_keyword": "var",
+    "interface_keyword": "interface",
+    "public_keyword": "public",
+    "private_keyword": "private",
+    "protected_keyword": "protected"
 }
