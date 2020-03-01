@@ -82,10 +82,10 @@ class Parser {
         var isClass: Boolean = false
         var isVar: Boolean = false
         var isFunction: Boolean = false
+        var isReturn: Boolean = false
+        var isGoto: Boolean = false
         var security: SecurityDegree = SecurityDegree.PUBLIC
         var identifer: Identifer = Identifer.DEFAULT
-        var levelStatement: Byte = 0 //level of statement
-        var levelBlock: Byte = 0 //level of block
         var typeName: String = ""
         var name: String = ""
 
@@ -104,7 +104,6 @@ class Parser {
                     val i = lexem.indexOf(platform.expression_end)
                     if (i >= 0) import(Regex("""(\w+\d*)""").find(lexem)!!.destructured.component1())
                     isImport = false
-                    println(platform.import_keyword)
                 }
                 isInclude -> {
                     checkExpressionEnd(lexem, {
@@ -142,13 +141,28 @@ class Parser {
                     else {
                         var ft: FuncType? = identifer.funcType
                         if (ft == null) {
-                            errors.add(SyntaxError(line, "Not valid type of function"))
+                            errors.add(SyntaxError(line, "Invalid type of function"))
                         }
                         else {
                             tc.createMethod(lexem, typeName, security, ft)
                         }
                         isFunction = false
                     }
+                }
+                isVar -> {
+                    if (typeName.isEmpty()) typeName = lexem
+                    else {
+                        when (identifer) {
+                            Identifer.STATIC -> tc.createStaticField(lexem, typeName, security)
+                            Identifer.FINAL -> tc.createFinalField(lexem, typeName, security)
+                            Identifer.DEFAULT -> tc.createField(lexem, typeName, security)
+                            else -> errors.add(SyntaxError(line, "Invalid type of variable"))
+                        }
+                        isVar = false
+                    }
+                }
+                identifer == Identifer.ENUM && lexem != platform.class_keyword -> {
+                    tc.createEnum(lexem, security)
                 }
                 else -> {
                     platform.run {
@@ -168,10 +182,27 @@ class Parser {
                             static_keyword -> identifer = Identifer.STATIC
                             abstract_keyword -> identifer = Identifer.ABSTRACT
                             class_keyword -> isClass = true
-                            statement_start -> levelStatement++
-                            statement_end -> levelStatement--
-                            block_start -> levelBlock++
-                            block_end -> levelBlock--
+                            function_keyword -> isFunction = true
+                            variable_keyword -> isVar = true
+                            statement_start -> tc.openStatement()
+                            statement_end -> tc.closeStatement()
+                            block_start -> tc.startBlock()
+                            block_end -> tc.endBlock()
+                            break_keyword -> tc.markBreak()
+                            continue_keyword -> tc.markContinue()
+                            throw_operator -> tc.throwException()
+                            assigment_operator -> tc.assignValue()
+                            equals_operator -> tc.equals()
+                            not_equals_operator -> tc.notEquals()
+                            greater_operator -> tc.greaterThen()
+                            less_operator -> tc.lessThen()
+                            gore_operator -> tc.greaterOrEqualsThen()
+                            lore_operator -> tc.lessOrEqualsThen()
+                            multiply_operator -> tc.multiply()
+                            divise_operator -> tc.divide()
+                            modulo_operator -> tc.modulo()
+                            power_operator -> tc.power()
+                            breakpoint_keyword -> tc.markBreakpoint()
                             "\n" -> tc.incLine()
                             else -> tc.callLiteral(lexem)
                         }

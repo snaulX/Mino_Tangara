@@ -84,6 +84,7 @@ data class Platform (
     var lore_operator: String = "<=",
     var not_operator: String = "!",
     var not_equals_operator: String = "!=",
+    var breakpoint_keyword: String = "breakpoint",
     var new_operator: String = "new",
     var throw_operator: String = "throw"
 )
