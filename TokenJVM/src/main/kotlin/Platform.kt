@@ -86,5 +86,6 @@ data class Platform (
     var not_equals_operator: String = "!=",
     var breakpoint_keyword: String = "breakpoint",
     var new_operator: String = "new",
-    var throw_operator: String = "throw"
+    var throw_operator: String = "throw",
+    var goto_keyword: String = "goto"
 )

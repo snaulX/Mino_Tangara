@@ -14,12 +14,12 @@ fun main(args: Array<String>) {
         val parser: Parser = Parser()
         parser.appname = "TestMinoApp"
         parser.code = """
-            import std; //importing platform std
+            import std;//importing platform std
             lib standart; //link tokens library standart
             use System; //using namespace System
             include mscorlib; //including base library of .NET
             Console.WriteLine("Hello World"); //printing Hello World on the console
-            class MyClass; //init class with name MyClass
+            public final class MyClass; //init class with name MyClass
             import mytest;
             /*
             Multiline comment

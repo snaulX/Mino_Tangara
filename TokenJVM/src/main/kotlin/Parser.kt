@@ -31,9 +31,13 @@ class Parser {
             platform = jacksonObjectMapper().readValue<Platform>(File("platforms/$platformName.json"))
         }
         catch (e: FileNotFoundException) {
-            errors.add(ImportError(line, "Platform by name $platformName not found. " +
-                    "Platforms need saved in folder next to the compiler 'platforms/' " +
-                    "and have extension .json"))
+            errors.add(
+                ImportError(
+                    line, "Platform by name $platformName not found. " +
+                            "Platforms need saved in folder next to the compiler 'platforms/' " +
+                            "and have extension .json"
+                )
+            )
         }
     }
 
@@ -82,17 +86,19 @@ class Parser {
         var isClass: Boolean = false
         var isVar: Boolean = false
         var isFunction: Boolean = false
-        var isReturn: Boolean = false
         var isGoto: Boolean = false
+        var isTypeAlias: Boolean = false
+        var isFuncAlias: Boolean = false
+        var needEnd: Boolean = false //check for need of end of expression
         var security: SecurityDegree = SecurityDegree.PUBLIC
         var identifer: Identifer = Identifer.DEFAULT
         var typeName: String = ""
-        var name: String = ""
 
         /**
          * Push [lexem] to TokensCreator
          */
         fun parseLexem(lexem: String) {
+            println(lexem)
             when {
                 singleComment -> {
                     if (lexem == "\n") singleComment = false
@@ -100,10 +106,24 @@ class Parser {
                 multiComment -> {
                     if (lexem == platform.multiline_comment_end) multiComment = false
                 }
+                needEnd -> {
+                    needEnd = if (lexem != platform.expression_end) {
+                        if (lexem == "\n") true
+                        else {
+                            errors.add(
+                                SyntaxError(
+                                    line, "End of expression not found"
+                                )
+                            )
+                            false
+                        }
+                    }
+                    else false
+                }
                 isImport -> {
-                    val i = lexem.indexOf(platform.expression_end)
-                    if (i >= 0) import(Regex("""(\w+\d*)""").find(lexem)!!.destructured.component1())
+                    import(Regex("""(\w+\d*)""").find(lexem)!!.destructured.component1())
                     isImport = false
+                    needEnd = true
                 }
                 isInclude -> {
                     checkExpressionEnd(lexem, {
@@ -161,6 +181,19 @@ class Parser {
                         isVar = false
                     }
                 }
+                isTypeAlias -> {
+                    //tc.createTypeAlias(lexem)
+                    isTypeAlias = false
+                }
+                isFuncAlias -> {
+                    //tc.createFuncAlias(lexem)
+                    isFuncAlias = false
+                }
+                isGoto -> {
+                    tc.goto(lexem)
+                    isGoto = false
+                    needEnd = true
+                }
                 identifer == Identifer.ENUM && lexem != platform.class_keyword -> {
                     tc.createEnum(lexem, security)
                 }
@@ -203,6 +236,10 @@ class Parser {
                             modulo_operator -> tc.modulo()
                             power_operator -> tc.power()
                             breakpoint_keyword -> tc.markBreakpoint()
+                            goto_keyword -> isGoto = true
+                            return_keyword -> tc.addReturn()
+                            typealias_keyword -> isTypeAlias = true
+                            funcalias_keyword -> isFuncAlias = true
                             "\n" -> tc.incLine()
                             else -> tc.callLiteral(lexem)
                         }
@@ -210,6 +247,7 @@ class Parser {
                 }
             }
         }
+
         /**
          * Check on empty and pushing to lexemes value from buffer and clear it
          */
@@ -237,15 +275,13 @@ class Parser {
                         parseLexem("\n") //for correct printing errors and single line comments
                 }
                 cur.isJavaIdentifierPart() -> {
-                    if (!prev.isJavaIdentifierPart())  clearBuffer()
+                    if (!prev.isJavaIdentifierPart()) clearBuffer()
                     buffer.append(cur)
                 } //for digits, letters and _
                 else -> {
-                    if (prev.isWhitespace() || prev.isJavaIdentifierPart()) clearBuffer()
-                    platform::javaClass.invoke().fields
-                        .filter { it.get(platform).toString() == buffer.toString() }
-                        .forEach { clearBuffer() }  //TODO("Повысить производительность")
-                    buffer.append(cur)
+                    clearBuffer()
+                    val buf = buffer.toString() //TODO("Create parsing puctuation")
+                    parseLexem(cur.toString())
                 } //punctuation
             }
             pos++
