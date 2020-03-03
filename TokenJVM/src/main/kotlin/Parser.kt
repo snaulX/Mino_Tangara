@@ -32,7 +32,7 @@ class Parser {
         punctation_keywords.clear()
         platform::class.memberProperties.forEach {
             val keyword = it.call(platform).toString()
-            if (keyword.isPucntuation()) {
+            if (keyword.isPunctuation()) {
                 punctation_keywords.add(keyword)
             }
         }
@@ -40,7 +40,7 @@ class Parser {
 
     infix fun import(platformName: String) {
         try {
-            platform = jacksonObjectMapper().readValue<Platform>(File("platforms/$platformName.json"))
+            platform = jacksonObjectMapper().readValue(File("platforms/$platformName.json"))
             checkPunctuation()
         }
         catch (e: FileNotFoundException) {
@@ -125,7 +125,7 @@ class Parser {
                         else {
                             errors.add(
                                 SyntaxError(
-                                    line, "End of expression not found"
+                                    line, "End of expression not found. Invalid end is $lexem"
                                 )
                             )
                             false
@@ -137,14 +137,18 @@ class Parser {
                     try {
                         import(Regex("""(\w+\d*)""").find(lexem)!!.destructured.component1())
                     } catch (e: KotlinNullPointerException) {
-                        errors.add(ImportError(line, "$lexem is not vaild platform name"))
+                        errors.add(ImportError(line, "$lexem is not valid platform name"))
                     }
                     isImport = false
                     needEnd = true
                 }
                 isInclude -> {
                     checkExpressionEnd(lexem, {
-                        buffer.append(Regex("""(\w+\d*|\.|\\|/)""").find(lexem)!!.destructured.component1())
+                        try {
+                            buffer.append(Regex("""(\w+\d*|\.|\\|/)""").find(lexem)!!.destructured.component1())
+                        } catch (e: KotlinNullPointerException) {
+                            errors.add(IncludeError(line, "$lexem is not valid incuding library name"))
+                        }
                     }, {
                         tc.include(buffer.toString())
                         buffer.clear()
@@ -153,7 +157,11 @@ class Parser {
                 }
                 isUse -> {
                     checkExpressionEnd(lexem, {
-                        buffer.append(Regex("""(\w+\d*|\.)""").find(lexem)!!.destructured.component1())
+                        try {
+                            buffer.append(Regex("""(\w+\d*|\.)""").find(lexem)!!.destructured.component1())
+                        } catch (e: KotlinNullPointerException) {
+                            errors.add(UseError(line, "$lexem is not valid using package (namespace) name"))
+                        }
                     }, {
                         tc.importPackage(buffer.toString())
                         buffer.clear()
@@ -162,7 +170,11 @@ class Parser {
                 }
                 isLib -> {
                     checkExpressionEnd(lexem, {
-                        buffer.append(Regex("""(\w+\d*|\.|\\|/)""").find(lexem)!!.destructured.component1())
+                        try {
+                            buffer.append(Regex("""(\w+\d*|\.|\\|/)""").find(lexem)!!.destructured.component1())
+                        } catch (e: KotlinNullPointerException) {
+                            errors.add(LibError(line, "$lexem is not valid tokens library name"))
+                        }
                     }, {
                         tc.linkLibrary(buffer.toString())
                         buffer.clear()
@@ -170,13 +182,16 @@ class Parser {
                     })
                 }
                 isClass -> {
-                    tc.createClass(lexem, security, identifer.classType)
+                    if (Regex("""\w+""").matches(lexem))
+                        tc.createClass(lexem, security, identifer.classType)
+                    else
+                        errors.add(SyntaxError(line, "$lexem is not valid name of class"))
                     isClass = false
                 }
                 isFunction -> {
                     if (typeName.isEmpty()) typeName = lexem
                     else {
-                        var ft: FuncType? = identifer.funcType
+                        val ft: FuncType? = identifer.funcType
                         if (ft == null) {
                             errors.add(SyntaxError(line, "Invalid type of function"))
                         }
@@ -301,8 +316,15 @@ class Parser {
                     if (!(prev.isJavaIdentifierPart() || prev.isWhitespace())) clearBuffer()
                     else {
                         val buf = buffer.toString() //TODO("Create parsing puctuation")
+                        val canTokens = mutableListOf<String>()
+                        for (token in punctation_keywords) {
+                            if (token.startsWith(buf) && token.length > buf.length) {
+                                canTokens.add(token)
+                            }
+                        }
+                        if (canTokens.isEmpty()) clearBuffer()
+                        else buffer.append(cur)
                     }
-                    parseLexem(cur.toString())
                 } //punctuation
             }
             pos++
@@ -310,7 +332,7 @@ class Parser {
         clearBuffer()
     }
 
-    fun String.isPucntuation(): Boolean {
+    fun String.isPunctuation(): Boolean {
         for (c in this) {
             if (c.isJavaIdentifierPart() || c.isWhitespace()) return false
         }
