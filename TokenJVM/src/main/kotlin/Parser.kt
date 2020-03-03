@@ -4,6 +4,7 @@ import com.snaulX.TokensAPI.*
 import com.fasterxml.jackson.module.kotlin.*
 import java.io.*
 import java.lang.StringBuilder
+import kotlin.reflect.full.memberProperties
 
 class Parser {
     var appname = ""
@@ -25,10 +26,22 @@ class Parser {
                 ' '
             }
         }
+    private val punctation_keywords: MutableList<String> = mutableListOf()
+
+    fun checkPunctuation() {
+        punctation_keywords.clear()
+        platform::class.memberProperties.forEach {
+            val keyword = it.call(platform).toString()
+            if (keyword.isPucntuation()) {
+                punctation_keywords.add(keyword)
+            }
+        }
+    }
 
     infix fun import(platformName: String) {
         try {
             platform = jacksonObjectMapper().readValue<Platform>(File("platforms/$platformName.json"))
+            checkPunctuation()
         }
         catch (e: FileNotFoundException) {
             errors.add(
@@ -121,7 +134,11 @@ class Parser {
                     else false
                 }
                 isImport -> {
-                    import(Regex("""(\w+\d*)""").find(lexem)!!.destructured.component1())
+                    try {
+                        import(Regex("""(\w+\d*)""").find(lexem)!!.destructured.component1())
+                    } catch (e: KotlinNullPointerException) {
+                        errors.add(ImportError(line, "$lexem is not vaild platform name"))
+                    }
                     isImport = false
                     needEnd = true
                 }
@@ -264,6 +281,8 @@ class Parser {
             }
         }
 
+        //Body of lexerize
+        checkPunctuation()
         while (pos < code.length) {
             when {
                 hasString -> {
@@ -279,14 +298,23 @@ class Parser {
                     buffer.append(cur)
                 } //for digits, letters and _
                 else -> {
-                    clearBuffer()
-                    val buf = buffer.toString() //TODO("Create parsing puctuation")
+                    if (!(prev.isJavaIdentifierPart() || prev.isWhitespace())) clearBuffer()
+                    else {
+                        val buf = buffer.toString() //TODO("Create parsing puctuation")
+                    }
                     parseLexem(cur.toString())
                 } //punctuation
             }
             pos++
         }
         clearBuffer()
+    }
+
+    fun String.isPucntuation(): Boolean {
+        for (c in this) {
+            if (c.isJavaIdentifierPart() || c.isWhitespace()) return false
+        }
+        return true
     }
 
     fun parse() {
