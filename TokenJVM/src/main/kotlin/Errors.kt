@@ -8,4 +8,6 @@ class UseError(line: Int, message: String) : TangaraError(line, message)
 
 class LibError(line: Int, message: String) : TangaraError(line, message)
 
+class InvalidNameError(line: Int, message: String) : TangaraError(line, message)
+
 class SyntaxError(line: Int, message: String) : TangaraError(line, message)

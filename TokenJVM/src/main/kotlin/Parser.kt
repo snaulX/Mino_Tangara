@@ -111,7 +111,7 @@ class Parser {
          * Push [lexem] to TokensCreator
          */
         fun parseLexem(lexem: String) {
-            println(lexem)
+            //println(lexem)
             when {
                 singleComment -> {
                     if (lexem == "\n") singleComment = false
@@ -185,7 +185,7 @@ class Parser {
                     if (Regex("""\w+""").matches(lexem))
                         tc.createClass(lexem, security, identifer.classType)
                     else
-                        errors.add(SyntaxError(line, "$lexem is not valid name of class"))
+                        errors.add(InvalidNameError(line, "$lexem is not valid name of class"))
                     isClass = false
                 }
                 isFunction -> {
@@ -204,25 +204,38 @@ class Parser {
                 isVar -> {
                     if (typeName.isEmpty()) typeName = lexem
                     else {
-                        when (identifer) {
-                            Identifer.STATIC -> tc.createStaticField(lexem, typeName, security)
-                            Identifer.FINAL -> tc.createFinalField(lexem, typeName, security)
-                            Identifer.DEFAULT -> tc.createField(lexem, typeName, security)
-                            else -> errors.add(SyntaxError(line, "Invalid type of variable"))
+                        if (lexem.isPunctuation() or (lexem == platform.expression_end)) {
+                            when (identifer) {
+                                Identifer.STATIC -> tc.createStaticField(typeName, "", security)
+                                Identifer.FINAL -> tc.createFinalField(typeName, "", security)
+                                Identifer.DEFAULT -> tc.createField(typeName, "", security)
+                                else -> errors.add(SyntaxError(line, "Invalid type of variable"))
+                            }
+                        }
+                        else {
+                            when (identifer) {
+                                Identifer.STATIC -> tc.createStaticField(lexem, typeName, security)
+                                Identifer.FINAL -> tc.createFinalField(lexem, typeName, security)
+                                Identifer.DEFAULT -> tc.createField(lexem, typeName, security)
+                                else -> errors.add(SyntaxError(line, "Invalid type of variable"))
+                            }
                         }
                         isVar = false
                     }
                 }
                 isTypeAlias -> {
-                    //tc.createTypeAlias(lexem)
+                    tc.createTypeAlias(lexem)
                     isTypeAlias = false
                 }
                 isFuncAlias -> {
-                    //tc.createFuncAlias(lexem)
+                    tc.createFuncAlias(lexem)
                     isFuncAlias = false
                 }
                 isGoto -> {
-                    tc.goto(lexem)
+                    if (Regex("\\w+").matches(lexem))
+                        tc.goto(lexem)
+                    else
+                        errors.add(InvalidNameError(line, "$lexem is not valid name of label for goto operator"))
                     isGoto = false
                     needEnd = true
                 }
