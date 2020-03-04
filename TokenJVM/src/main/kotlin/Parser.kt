@@ -21,8 +21,7 @@ class Parser {
         get() {
             return try {
                 code[pos - 1]
-            }
-            catch (e: StringIndexOutOfBoundsException) {
+            } catch (e: StringIndexOutOfBoundsException) {
                 ' '
             }
         }
@@ -42,8 +41,7 @@ class Parser {
         try {
             platform = jacksonObjectMapper().readValue(File("platforms/$platformName.json"))
             checkPunctuation()
-        }
-        catch (e: FileNotFoundException) {
+        } catch (e: FileNotFoundException) {
             errors.add(
                 ImportError(
                     line, "Platform by name $platformName not found. " +
@@ -130,8 +128,7 @@ class Parser {
                             )
                             false
                         }
-                    }
-                    else false
+                    } else false
                 }
                 isImport -> {
                     try {
@@ -194,8 +191,7 @@ class Parser {
                         val ft: FuncType? = identifer.funcType
                         if (ft == null) {
                             errors.add(SyntaxError(line, "Invalid type of function"))
-                        }
-                        else {
+                        } else {
                             tc.createMethod(lexem, typeName, security, ft)
                         }
                         isFunction = false
@@ -211,8 +207,7 @@ class Parser {
                                 Identifer.DEFAULT -> tc.createField(typeName, "", security)
                                 else -> errors.add(SyntaxError(line, "Invalid type of variable"))
                             }
-                        }
-                        else {
+                        } else {
                             when (identifer) {
                                 Identifer.STATIC -> tc.createStaticField(lexem, typeName, security)
                                 Identifer.FINAL -> tc.createFinalField(lexem, typeName, security)
@@ -299,6 +294,7 @@ class Parser {
         fun clearBuffer() {
             if (buffer.isNotEmpty()) {
                 val buf: String = buffer.toString()
+                println(buf)
                 if (buf.contains(platform.string_char)) {
                     val ind: Int = buf.indexOf(platform.string_char)
                     if (!(hasString && buf[ind - 1] == '\\'))
@@ -315,6 +311,13 @@ class Parser {
             when {
                 hasString -> {
                     buffer.append(cur)
+                    if (buffer.endsWith(platform.string_char)) {
+                        hasString = false
+                        buffer.removeSuffix(platform.string_char)
+                        println(buffer.toString())
+                        tc.loadValue(buffer.toString())
+                        buffer.clear()
+                    }
                 }
                 cur.isWhitespace() -> {
                     clearBuffer()
@@ -326,18 +329,16 @@ class Parser {
                     buffer.append(cur)
                 } //for digits, letters and _
                 else -> {
-                    if (!(prev.isJavaIdentifierPart() || prev.isWhitespace())) clearBuffer()
-                    else {
-                        val buf = buffer.toString() //TODO("Create parsing puctuation")
-                        val canTokens = mutableListOf<String>()
-                        for (token in punctation_keywords) {
-                            if (token.startsWith(buf) && token.length > buf.length) {
-                                canTokens.add(token)
-                            }
+                    if (prev.isJavaIdentifierPart() || prev.isWhitespace()) clearBuffer()
+                    buffer.append(cur)
+                    val buf = buffer.toString()
+                    val canTokens = mutableListOf<String>()
+                    for (token in punctation_keywords) {
+                        if (token.startsWith(buf) && token.length > buf.length) {
+                            canTokens.add(token)
                         }
-                        if (canTokens.isEmpty()) clearBuffer()
-                        else buffer.append(cur)
                     }
+                    if (canTokens.isEmpty()) clearBuffer()
                 } //punctuation
             }
             pos++
