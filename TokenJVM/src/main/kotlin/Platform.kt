@@ -87,5 +87,7 @@ data class Platform (
     var breakpoint_keyword: String = "breakpoint",
     var new_operator: String = "new",
     var throw_operator: String = "throw",
-    var goto_keyword: String = "goto"
+    var goto_keyword: String = "goto",
+    var in_operator: String = "in",
+    var convert_operator: String = "to"
 )

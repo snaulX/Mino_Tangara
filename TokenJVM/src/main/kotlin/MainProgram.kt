@@ -10,7 +10,7 @@ fun main(args: Array<String>) {
             All copyrights reserved.
             GitHub repository: https://github.com/snaulX/Tangara
         """.trimIndent())*/
-        //for test in IDE
+        //next code for test in IDE
         val parser: Parser = Parser()
         parser.appname = "TestMinoApp"
         parser.code = """
@@ -20,6 +20,10 @@ fun main(args: Array<String>) {
             include mscorlib; //including base library of .NET
             Console.WriteLine("Hello World"); //printing Hello World on the console
             public final class MyClass; //init class with name MyClass
+            typealias string;
+            funcalias print;
+            //var a = 0;
+            a is int;
             import mytest;
             /*
             Multiline comment

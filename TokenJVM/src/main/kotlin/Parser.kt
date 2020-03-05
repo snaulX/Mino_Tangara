@@ -94,6 +94,8 @@ class Parser {
         var isGoto: Boolean = false
         var isTypeAlias: Boolean = false
         var isFuncAlias: Boolean = false
+        var isConvert: Boolean = false
+        var isIsOp: Boolean = false
         var needEnd: Boolean = false //check for need of end of expression
         var security: SecurityDegree = SecurityDegree.PUBLIC
         var identifer: Identifer = Identifer.DEFAULT
@@ -101,8 +103,9 @@ class Parser {
 
         /**
          * Push [lexem] to TokensCreator
+         * @return Will can buffer clearing?
          */
-        fun parseLexem(lexem: String) {
+        fun parseLexem(lexem: String): Boolean {
             //println(lexem)
             when {
                 singleComment -> {
@@ -128,49 +131,54 @@ class Parser {
                     try {
                         import(Regex("(\\w+)").find(lexem)!!.destructured.component1())
                     } catch (e: KotlinNullPointerException) {
-                        errors.add(ImportError(line, "$lexem is not valid platform name"))
+                        errors.add(InvalidNameError(line, "$lexem is not valid platform name"))
                     }
                     isImport = false
                     needEnd = true
                 }
                 isInclude -> {
-                    if (lexem == platform.expression_end) {
-                        tc.include(buffer.toString())
+                    val name = lexem.substring(lexem.length / 2)
+                    if (name.endsWith(platform.expression_end)) {
+                        tc.include(name.removeSuffix(platform.expression_end))
                         buffer.clear()
                         isInclude = false
                     } else {
                         try {
                             buffer.append(Regex("""(\w+|\.|\\|/)""").find(lexem)!!.destructured.component1())
                         } catch (e: KotlinNullPointerException) {
-                            errors.add(IncludeError(line, "$lexem is not valid incuding library name"))
+                            errors.add(InvalidNameError(line, "$name is not valid including library name"))
                         }
+                        return false
                     }
                 }
                 isUse -> {
-                    if (lexem == platform.expression_end) {
-                        tc.importPackage(buffer.toString())
+                    val name = lexem.substring(lexem.length / 2)
+                    if (name.endsWith(platform.expression_end)) {
+                        tc.importPackage(name.removeSuffix(platform.expression_end))
                         buffer.clear()
                         isUse = false
                     } else {
                         try {
                             buffer.append(Regex("""(\w+|\.)""").find(lexem)!!.destructured.component1())
                         } catch (e: KotlinNullPointerException) {
-                            errors.add(UseError(line, "$lexem is not valid using package (namespace) name"))
+                            errors.add(InvalidNameError(line, "$name is not valid using package (namespace) name"))
                         }
+                        return false
                     }
                 }
                 isLib -> {
-                    if (lexem == platform.expression_end) {
-                        tc.linkLibrary(buffer.toString())
+                    val name = lexem.substring(lexem.length / 2)
+                    if (name.endsWith(platform.expression_end)) {
+                        tc.linkLibrary(name.removeSuffix(platform.expression_end))
                         buffer.clear()
                         isLib = false
                     } else {
                         try {
                             buffer.append(Regex("""(\w+|\.|\\|/)""").find(lexem)!!.destructured.component1())
                         } catch (e: KotlinNullPointerException) {
-                            errors.add(LibError(line, "$lexem is not valid tokens library name"))
+                            errors.add(InvalidNameError(line, "$name is not valid tokens library name"))
                         }
-
+                        return false
                     }
                 }
                 isClass -> {
@@ -181,6 +189,7 @@ class Parser {
                     identifer = Identifer.DEFAULT
                     security = SecurityDegree.PUBLIC
                     isClass = false
+                    needEnd = true
                 }
                 isFunction -> {
                     if (typeName.isEmpty()) typeName = lexem
@@ -231,9 +240,23 @@ class Parser {
                     if (Regex("\\w+").matches(lexem))
                         tc.goto(lexem)
                     else
-                        errors.add(InvalidNameError(line, "$lexem is not valid name of label for goto operator"))
+                        errors.add(InvalidNameError(line, "$lexem is not valid name of label for ${platform.goto_keyword} operator"))
                     isGoto = false
                     needEnd = true
+                }
+                isConvert -> {
+                    if (Regex("\\w+").matches(lexem))
+                        tc.convertTo(lexem)
+                    else
+                        errors.add(InvalidNameError(line, "$lexem is not valid name of type for convert operator"))
+                    isConvert = false
+                }
+                isIsOp -> {
+                    if (Regex("\\w+").matches(lexem))
+                        tc.addIs(lexem)
+                    else
+                        errors.add(InvalidNameError(line, "$lexem is not valid name of type for ${platform.is_keyword} operator"))
+                    isIsOp = false
                 }
                 identifer == Identifer.ENUM && lexem != platform.class_keyword -> {
                     tc.createEnum(lexem, security)
@@ -242,7 +265,6 @@ class Parser {
                 }
                 else -> {
                     platform.run {
-                        println("LEXEM $lexem")
                         when (lexem) {
                             import_keyword -> isImport = true
                             single_comment_start -> singleComment = true
@@ -285,12 +307,23 @@ class Parser {
                             typealias_keyword -> isTypeAlias = true
                             funcalias_keyword -> isFuncAlias = true
                             string_char -> hasString = true
+                            if_keyword -> tc.createIf()
+                            else_keyword -> tc.createElse()
+                            do_keyword -> tc.createDo()
+                            case_keyword -> tc.createCase()
+                            while_keyword -> tc.createWhile()
+                            switch_keyword -> tc.createSwitch()
+                            with_keyword -> tc.createWith()
+                            in_operator -> tc.addIn()
+                            convert_operator -> isConvert = true
+                            is_keyword -> isIsOp = true
                             "\n" -> tc.incLine()
-                            else -> tc.callLiteral(lexem)
+                            else -> if (lexem != expression_end) tc.callLiteral(lexem)
                         }
                     }
                 }
             }
+            return true
         }
 
         /**
@@ -313,10 +346,10 @@ class Parser {
                             tc.loadValue(buffer.removeSuffix(platform.string_char))
                         }
                     }
+                    buffer.clear()
                 } else {
-                    parseLexem(buf)
+                    if (parseLexem(buf)) buffer.clear()
                 }
-                buffer.clear()
             }
         }
 
