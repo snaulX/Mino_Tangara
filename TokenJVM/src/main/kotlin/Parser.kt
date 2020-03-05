@@ -80,12 +80,6 @@ class Parser {
         }
     }
 
-    fun checkExpressionEnd(curLexem: String, onNotExpression: () -> Unit, onTrueExpression: () -> Unit = {}) {
-        val i = curLexem.indexOf(platform.expression_end)
-        if (i >= 0) onTrueExpression
-        else onNotExpression
-    }
-
     fun lexerize() {
         var singleComment: Boolean = false
         var multiComment: Boolean = false
@@ -132,7 +126,7 @@ class Parser {
                 }
                 isImport -> {
                     try {
-                        import(Regex("""(\w+\d*)""").find(lexem)!!.destructured.component1())
+                        import(Regex("(\\w+)").find(lexem)!!.destructured.component1())
                     } catch (e: KotlinNullPointerException) {
                         errors.add(ImportError(line, "$lexem is not valid platform name"))
                     }
@@ -140,49 +134,52 @@ class Parser {
                     needEnd = true
                 }
                 isInclude -> {
-                    checkExpressionEnd(lexem, {
-                        try {
-                            buffer.append(Regex("""(\w+\d*|\.|\\|/)""").find(lexem)!!.destructured.component1())
-                        } catch (e: KotlinNullPointerException) {
-                            errors.add(IncludeError(line, "$lexem is not valid incuding library name"))
-                        }
-                    }, {
+                    if (lexem == platform.expression_end) {
                         tc.include(buffer.toString())
                         buffer.clear()
                         isInclude = false
-                    })
+                    } else {
+                        try {
+                            buffer.append(Regex("""(\w+|\.|\\|/)""").find(lexem)!!.destructured.component1())
+                        } catch (e: KotlinNullPointerException) {
+                            errors.add(IncludeError(line, "$lexem is not valid incuding library name"))
+                        }
+                    }
                 }
                 isUse -> {
-                    checkExpressionEnd(lexem, {
-                        try {
-                            buffer.append(Regex("""(\w+\d*|\.)""").find(lexem)!!.destructured.component1())
-                        } catch (e: KotlinNullPointerException) {
-                            errors.add(UseError(line, "$lexem is not valid using package (namespace) name"))
-                        }
-                    }, {
+                    if (lexem == platform.expression_end) {
                         tc.importPackage(buffer.toString())
                         buffer.clear()
                         isUse = false
-                    })
+                    } else {
+                        try {
+                            buffer.append(Regex("""(\w+|\.)""").find(lexem)!!.destructured.component1())
+                        } catch (e: KotlinNullPointerException) {
+                            errors.add(UseError(line, "$lexem is not valid using package (namespace) name"))
+                        }
+                    }
                 }
                 isLib -> {
-                    checkExpressionEnd(lexem, {
-                        try {
-                            buffer.append(Regex("""(\w+\d*|\.|\\|/)""").find(lexem)!!.destructured.component1())
-                        } catch (e: KotlinNullPointerException) {
-                            errors.add(LibError(line, "$lexem is not valid tokens library name"))
-                        }
-                    }, {
+                    if (lexem == platform.expression_end) {
                         tc.linkLibrary(buffer.toString())
                         buffer.clear()
                         isLib = false
-                    })
+                    } else {
+                        try {
+                            buffer.append(Regex("""(\w+|\.|\\|/)""").find(lexem)!!.destructured.component1())
+                        } catch (e: KotlinNullPointerException) {
+                            errors.add(LibError(line, "$lexem is not valid tokens library name"))
+                        }
+
+                    }
                 }
                 isClass -> {
-                    if (Regex("""\w+""").matches(lexem))
+                    if (Regex("\\w+").matches(lexem))
                         tc.createClass(lexem, security, identifer.classType)
                     else
                         errors.add(InvalidNameError(line, "$lexem is not valid name of class"))
+                    identifer = Identifer.DEFAULT
+                    security = SecurityDegree.PUBLIC
                     isClass = false
                 }
                 isFunction -> {
@@ -194,6 +191,8 @@ class Parser {
                         } else {
                             tc.createMethod(lexem, typeName, security, ft)
                         }
+                        identifer = Identifer.DEFAULT
+                        security = SecurityDegree.PUBLIC
                         isFunction = false
                     }
                 }
@@ -215,6 +214,8 @@ class Parser {
                                 else -> errors.add(SyntaxError(line, "Invalid type of variable"))
                             }
                         }
+                        identifer = Identifer.DEFAULT
+                        security = SecurityDegree.PUBLIC
                         isVar = false
                     }
                 }
@@ -236,9 +237,12 @@ class Parser {
                 }
                 identifer == Identifer.ENUM && lexem != platform.class_keyword -> {
                     tc.createEnum(lexem, security)
+                    identifer = Identifer.DEFAULT
+                    security = SecurityDegree.PUBLIC
                 }
                 else -> {
                     platform.run {
+                        println("LEXEM $lexem")
                         when (lexem) {
                             import_keyword -> isImport = true
                             single_comment_start -> singleComment = true
@@ -280,6 +284,7 @@ class Parser {
                             return_keyword -> tc.addReturn()
                             typealias_keyword -> isTypeAlias = true
                             funcalias_keyword -> isFuncAlias = true
+                            string_char -> hasString = true
                             "\n" -> tc.incLine()
                             else -> tc.callLiteral(lexem)
                         }
@@ -294,13 +299,23 @@ class Parser {
         fun clearBuffer() {
             if (buffer.isNotEmpty()) {
                 val buf: String = buffer.toString()
-                println(buf)
-                if (buf.contains(platform.string_char)) {
-                    val ind: Int = buf.indexOf(platform.string_char)
-                    if (!(hasString && buf[ind - 1] == '\\'))
-                        hasString = !hasString
+                if (hasString) {
+                    val index = buf.lastIndexOf(platform.string_char)
+                    if ((index >= 0)) {
+                        try {
+                            if (buf[index - 1] != '\\') {
+                                hasString = false
+                                tc.loadValue(buffer.removeSuffix(platform.string_char))
+                            }
+                        }
+                        catch (e: StringIndexOutOfBoundsException) {
+                            hasString = false
+                            tc.loadValue(buffer.removeSuffix(platform.string_char))
+                        }
+                    }
+                } else {
+                    parseLexem(buf)
                 }
-                parseLexem(buf)
                 buffer.clear()
             }
         }
@@ -311,13 +326,7 @@ class Parser {
             when {
                 hasString -> {
                     buffer.append(cur)
-                    if (buffer.endsWith(platform.string_char)) {
-                        hasString = false
-                        buffer.removeSuffix(platform.string_char)
-                        println(buffer.toString())
-                        tc.loadValue(buffer.toString())
-                        buffer.clear()
-                    }
+                    clearBuffer()
                 }
                 cur.isWhitespace() -> {
                     clearBuffer()
