@@ -1,44 +1,29 @@
 package com.snaulX.Tangara
 
-import java.io.FileReader
+import java.io.File
 
 fun main(args: Array<String>) {
+    val start = System.currentTimeMillis()
     if (args.isEmpty()) {
-        /*println("""
+        println("""
             Tangara 2020-2020
             Author: snaulX
             All copyrights reserved.
             GitHub repository: https://github.com/snaulX/Tangara
-        """.trimIndent())*/
+        """.trimIndent())
         //next code for test in IDE
         val parser: Parser = Parser()
-        parser.appname = "TestMinoApp"
-        parser.code = """
-            import std;//importing platform std
-            lib standart; //link tokens library standart
-            use System; //using namespace System
-            include mscorlib; //including base library of .NET
-            Console.WriteLine("Hello World"); //printing Hello World on the console
-            public final class MyClass; //init class with name MyClass
-            typealias string;
-            funcalias print;
-            //var a = 0;
-            a is int;
-            import mytest # not error
-            /*
-            Multiline comment
-            is
-            work
-            */
-            dyalect twoerrors;
-            typedef MyTestTypeAlias
-        """.trimIndent()
+        val file: File = File("TestMinoApp.mino")
+        parser.appname = file.nameWithoutExtension
+        parser.code = file.readText()
         parser.parse()
     }
     else {
         val parser: Parser = Parser()
-        val file: FileReader = FileReader(args[0])
+        val file: File = File(args[0])
+        parser.appname = file.nameWithoutExtension
         parser.code = file.readText()
         parser.parse()
     }
+    println("Compilation time: ${System.currentTimeMillis() - start} ms")
 }

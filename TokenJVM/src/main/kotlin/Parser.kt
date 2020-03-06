@@ -59,34 +59,6 @@ class Parser {
         }
     }
 
-    fun checkSecurity(sec: String): SecurityDegree? {
-        return when (sec) {
-            "" -> SecurityDegree.PUBLIC
-            platform.public_keyword -> SecurityDegree.PUBLIC
-            platform.private_keyword -> SecurityDegree.PRIVATE
-            platform.protected_keyword -> SecurityDegree.PROTECTED
-            else -> {
-                errors.add(SyntaxError(line, "Syntax of security is invalid"))
-                return null
-            }
-        }
-    }
-
-    fun checkClassType(t: String): ClassType? {
-        return when (t) {
-            "" -> ClassType.DEFAULT
-            platform.data_keyword -> ClassType.DATA
-            platform.final_keyword -> ClassType.FINAL
-            platform.static_keyword -> ClassType.STATIC
-            platform.abstract_keyword -> ClassType.ABSTRACT
-            platform.enum_keyword -> ClassType.ENUM
-            else -> {
-                errors.add(SyntaxError(line, "Syntax of class type is invalid"))
-                return null
-            }
-        }
-    }
-
     fun lexerize() {
         var singleComment: Boolean = false
         var multiComment: Boolean = false
@@ -103,6 +75,7 @@ class Parser {
         var isFuncAlias: Boolean = false
         var isConvert: Boolean = false
         var isIsOp: Boolean = false
+        var lastLiteral: Boolean = false //last was literal or string or number
         var needEnd: Boolean = false //check for need of end of expression
         var security: SecurityDegree = SecurityDegree.PUBLIC
         var identifer: Identifer = Identifer.DEFAULT
@@ -113,7 +86,7 @@ class Parser {
          * @return Will can buffer clearing?
          */
         fun parseLexem(lexem: String): Boolean {
-            //println(lexem)
+            val exprend = platform.expression_end //for optimizing
             when {
                 singleComment -> {
                     if (lexem == "\n") singleComment = false
@@ -122,9 +95,9 @@ class Parser {
                     if (lexem == platform.multiline_comment_end) multiComment = false
                 }
                 needEnd -> {
-                    needEnd = if (lexem != platform.expression_end) {
+                    needEnd = if (lexem != exprend) {
                         if (lexem == "\n") true
-                        else if (platform.expression_end.isBlank() &&
+                        else if (exprend.isBlank() &&
                             (lexem == platform.single_comment_start ||
                              lexem == platform.multiline_comment_start)) {
                             needEnd = false
@@ -152,8 +125,8 @@ class Parser {
                 }
                 isInclude -> {
                     val name = lexem.substring(lexem.length / 2)
-                    if (name.endsWith(platform.expression_end)) {
-                        tc.include(name.removeSuffix(platform.expression_end))
+                    if (name.endsWith(exprend)) {
+                        tc.include(name.removeSuffix(exprend))
                         buffer.clear()
                         isInclude = false
                     } else {
@@ -167,8 +140,8 @@ class Parser {
                 }
                 isUse -> {
                     val name = lexem.substring(lexem.length / 2)
-                    if (name.endsWith(platform.expression_end)) {
-                        tc.importPackage(name.removeSuffix(platform.expression_end))
+                    if (name.endsWith(exprend)) {
+                        tc.importPackage(name.removeSuffix(exprend))
                         buffer.clear()
                         isUse = false
                     } else {
@@ -182,8 +155,8 @@ class Parser {
                 }
                 isLib -> {
                     val name = lexem.substring(lexem.length / 2)
-                    if (name.endsWith(platform.expression_end)) {
-                        tc.linkLibrary(name.removeSuffix(platform.expression_end))
+                    if (name.endsWith(exprend)) {
+                        tc.linkLibrary(name.removeSuffix(exprend))
                         buffer.clear()
                         isLib = false
                     } else {
@@ -222,7 +195,7 @@ class Parser {
                 isVar -> {
                     if (typeName.isEmpty()) typeName = lexem
                     else {
-                        if (lexem.isPunctuation() or (lexem == platform.expression_end)) {
+                        if (lexem.isPunctuation() or (lexem == exprend)) {
                             when (identifer) {
                                 Identifer.STATIC -> tc.createStaticField(typeName, "", security)
                                 Identifer.FINAL -> tc.createFinalField(typeName, "", security)
@@ -243,11 +216,11 @@ class Parser {
                     }
                 }
                 isTypeAlias -> {
-                    tc.createTypeAlias(lexem)
+                    tc.createTypeAlias(lexem.removeSuffix(exprend))
                     isTypeAlias = false
                 }
                 isFuncAlias -> {
-                    tc.createFuncAlias(lexem)
+                    tc.createFuncAlias(lexem.removeSuffix(exprend))
                     isFuncAlias = false
                 }
                 isGoto -> {
@@ -331,7 +304,6 @@ class Parser {
                             in_operator -> tc.addIn()
                             convert_operator -> isConvert = true
                             is_keyword -> isIsOp = true
-                            "\n" -> tc.incLine()
                             else -> if (lexem != expression_end) tc.callLiteral(lexem)
                         }
                     }
@@ -377,8 +349,11 @@ class Parser {
                 }
                 cur.isWhitespace() -> {
                     clearBuffer()
-                    if (cur == '\n')
+                    if (cur == '\n') {
+                        tc.incLine()
+                        line++
                         parseLexem("\n") //for correct printing errors and single line comments
+                    }
                 }
                 cur.isJavaIdentifierPart() -> {
                     if (!prev.isJavaIdentifierPart()) clearBuffer()
@@ -397,12 +372,19 @@ class Parser {
                     if (canTokens.isEmpty()) clearBuffer()
                 } //punctuation
             }
-            pos++
+           pos++
         }
-        clearBuffer()
+        val buf = buffer.toString()
+        if (needEnd || (
+            (buf != platform.expression_end || buf != platform.block_end)
+            && platform.expression_end.isNotBlank()
+                    ))
+            errors.add(SyntaxError(line, "Need end of expression"))
+        else
+            clearBuffer()
     }
 
-    fun String.isPunctuation(): Boolean {
+    protected fun String.isPunctuation(): Boolean {
         for (c in this) {
             if (c.isJavaIdentifierPart() || c.isWhitespace()) return false
         }
