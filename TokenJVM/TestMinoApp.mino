@@ -16,3 +16,4 @@ work
 */
 dyalect twoerrors;
 typedef MyTestTypeAlias
+runline some_label //goto operator

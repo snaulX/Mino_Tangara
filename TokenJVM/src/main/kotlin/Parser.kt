@@ -1,3 +1,10 @@
+/**
+ *TODO("Create variable and function parsing")
+ *TODO("Remove semicolons in typealias and funcalias")
+ *TODO("Create construtor parsing")
+ *TODO("Optimize")
+ */
+
 package com.snaulX.Tangara
 
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException
@@ -320,7 +327,7 @@ class Parser {
                 val buf: String = buffer.toString()
                 if (hasString) {
                     val index = buf.lastIndexOf(platform.string_char)
-                    if ((index >= 0)) {
+                    if (index >= 0) {
                         try {
                             if (buf[index - 1] != '\\') {
                                 hasString = false
@@ -331,8 +338,8 @@ class Parser {
                             hasString = false
                             tc.loadValue(buffer.removeSuffix(platform.string_char))
                         }
+                        buffer.clear()
                     }
-                    buffer.clear()
                 } else {
                     if (parseLexem(buf)) buffer.clear()
                 }
@@ -376,9 +383,9 @@ class Parser {
         }
         val buf = buffer.toString()
         if (needEnd || (
-            (buf != platform.expression_end || buf != platform.block_end)
-            && platform.expression_end.isNotBlank()
-                    ))
+            (buf != platform.expression_end || buf != platform.block_end
+                    || !singleComment || !multiComment)
+            && platform.expression_end.isNotBlank()))
             errors.add(SyntaxError(line, "Need end of expression"))
         else
             clearBuffer()
