@@ -24,12 +24,14 @@ fun main(args: Array<String>) {
             funcalias print;
             //var a = 0;
             a is int;
-            import mytest;
+            import mytest # not error
             /*
             Multiline comment
             is
             work
             */
+            dyalect twoerrors;
+            typedef MyTestTypeAlias
         """.trimIndent()
         parser.parse()
     }

@@ -27,7 +27,7 @@ data class Platform (
     var while_keyword: String = "while",
     var do_keyword: String = "do",
     var for_keyword: String = "for",
-    var foreach_keyword: String = "foreach",
+    var foreach_keyword: String = "for",
     var const_keyword: String = "const",
     var enum_keyword: String = "enum",
     var delegate_keyword: String = "delegate",

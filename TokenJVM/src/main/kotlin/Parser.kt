@@ -1,5 +1,6 @@
 package com.snaulX.Tangara
 
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException
 import com.snaulX.TokensAPI.*
 import com.fasterxml.jackson.module.kotlin.*
 import java.io.*
@@ -47,6 +48,12 @@ class Parser {
                     line, "Platform by name $platformName not found. " +
                             "Platforms need saved in folder next to the compiler 'platforms/' " +
                             "and have extension .json"
+                )
+            )
+        } catch (e: UnrecognizedPropertyException) {
+            errors.add(
+                ImportError(
+                    line, "Invalid token ${e.propertyName} in platform $platformName."
                 )
             )
         }
@@ -117,6 +124,13 @@ class Parser {
                 needEnd -> {
                     needEnd = if (lexem != platform.expression_end) {
                         if (lexem == "\n") true
+                        else if (platform.expression_end.isBlank() &&
+                            (lexem == platform.single_comment_start ||
+                             lexem == platform.multiline_comment_start)) {
+                            needEnd = false
+                            parseLexem(lexem)
+                            false
+                        }
                         else {
                             errors.add(
                                 SyntaxError(
