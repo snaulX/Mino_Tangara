@@ -5,9 +5,14 @@ include mscorlib; //including base library of .NET
 Console.WriteLine("Hello World"); //printing Hello World on the console
 public final class MyClass; //init class with name MyClass
 typealias string;
-funcalias print;
+expect funcalias print;
+#if DOTNET
+    actual funcalias print = Console.WriteLine;
+#if JVM
+    actual funcalias print = System.out.print;
+#endif
 public static var a = 0;
-a is int;
+if (a is int) print(a to string);
 import mytest # not error
 /*
 Multiline comment

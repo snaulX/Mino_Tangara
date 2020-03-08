@@ -35,6 +35,7 @@ data class Platform (
     var delegate_keyword: String = "delegate",
     var interface_keyword: String = "interface",
     var operator_keyword: String = "operator",
+    var struct_keyword: String = "struct",
     var annotaion_start: String = "@",
     var annotaion_end: String = "",
     var array_start: String = "[",

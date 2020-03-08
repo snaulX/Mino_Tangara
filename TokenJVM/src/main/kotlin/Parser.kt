@@ -1,7 +1,8 @@
 /**
- *TODO("Create variable and function parsing")
- *TODO("Create construtor parsing")
+ *TODO("Create parsing of all tokens with if without when")
+ *TODO("Create char and number parsing")
  *TODO("Optimize")
+ *TODO("Fix bugs")
  */
 
 package com.snaulX.Tangara
@@ -193,7 +194,6 @@ class Parser {
                     identifer = DEFAULT
                     security = PUBLIC
                     isClass = false
-                    needEnd = true
                 }
                 isFunction -> {
                     if (typeName.isEmpty()) typeName = lexem
@@ -246,7 +246,20 @@ class Parser {
                     isIsOp = false
                 }
                 isInterface -> {
-                    //isClass
+                    if (Regex("\\w+").matches(lexem))
+                        tc.createClass(lexem, ClassType.INTERFACE, security)
+                    else
+                        errors.add(InvalidNameError(line, "$lexem is not valid name of interface"))
+                    identifer = DEFAULT
+                    security = PUBLIC
+                }
+                isStruct -> {
+                    if (Regex("\\w+").matches(lexem))
+                        tc.createClass(lexem, ClassType.STRUCT, security)
+                    else
+                        errors.add(InvalidNameError(line, "$lexem is not valid name of struct"))
+                    identifer = DEFAULT
+                    security = PUBLIC
                 }
                 identifer == ENUM && lexem != platform.class_keyword -> {
                     if (Regex("\\w+").matches(lexem))
@@ -287,6 +300,7 @@ class Parser {
                                     errors.add(InvalidNameError(line, "Invalid type of variable"))
                                 else
                                     tc.startVarDefinition(vt, security)
+                                identifer = DEFAULT
                             }
                             statement_start -> tc.statement(start = true)
                             statement_end -> tc.statement(start = false)
@@ -324,8 +338,15 @@ class Parser {
                             convert_operator -> isConvert = true
                             is_keyword -> isIsOp = true
                             yield_keyword -> tc.insertYield()
-                            const_keyword -> tc.startVarDefinition(VarType.CONST, security)
+                            const_keyword -> {
+                                tc.startVarDefinition(VarType.CONST, security)
+                                security = PUBLIC
+                                identifer = DEFAULT
+                            }
                             interface_keyword -> isInterface = true
+                            struct_keyword -> isStruct = true
+                            implements_keyword -> tc.implements()
+                            extends_keyword -> tc.extends()
                             else -> tc.callLiteral(lexem)
                         }
                     }
