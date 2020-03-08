@@ -1,6 +1,5 @@
 /**
  *TODO("Create variable and function parsing")
- *TODO("Remove semicolons in typealias and funcalias")
  *TODO("Create construtor parsing")
  *TODO("Optimize")
  */
@@ -9,6 +8,9 @@ package com.snaulX.Tangara
 
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException
 import com.snaulX.TokensAPI.*
+import com.snaulX.TokensAPI.OperatorType.*
+import com.snaulX.Tangara.Identifer.*
+import com.snaulX.TokensAPI.SecurityDegree.*
 import com.fasterxml.jackson.module.kotlin.*
 import java.io.*
 import java.lang.StringBuilder
@@ -75,16 +77,16 @@ class Parser {
         var isUse: Boolean = false
         var isInclude: Boolean = false
         var isClass: Boolean = false
-        var isVar: Boolean = false
         var isFunction: Boolean = false
         var isGoto: Boolean = false
         var isTypeAlias: Boolean = false
         var isFuncAlias: Boolean = false
         var isConvert: Boolean = false
+        var isInterface: Boolean = false
+        var isStruct: Boolean = false
         var isIsOp: Boolean = false
-        var lastLiteral: Boolean = false //last was literal or string or number
         var needEnd: Boolean = false //check for need of end of expression
-        var security: SecurityDegree = SecurityDegree.PUBLIC
+        var security: SecurityDegree = PUBLIC
         var identifer: Identifer = Identifer.DEFAULT
         var typeName: String = ""
 
@@ -119,7 +121,10 @@ class Parser {
                             )
                             false
                         }
-                    } else false
+                    } else {
+                        tc.insertExprEnd()
+                        false
+                    }
                 }
                 isImport -> {
                     try {
@@ -163,7 +168,7 @@ class Parser {
                 isLib -> {
                     val name = lexem.substring(lexem.length / 2)
                     if (name.endsWith(exprend)) {
-                        tc.linkLibrary(name.removeSuffix(exprend))
+                        tc.importLibrary(name.removeSuffix(exprend))
                         buffer.clear()
                         isLib = false
                     } else {
@@ -176,63 +181,51 @@ class Parser {
                     }
                 }
                 isClass -> {
-                    if (Regex("\\w+").matches(lexem))
-                        tc.createClass(lexem, security, identifer.classType)
+                    if (Regex("\\w+").matches(lexem)) {
+                        val ct: ClassType? = identifer.classType
+                        if (ct == null)
+                            errors.add(InvalidNameError(line, "Invalid type of class"))
+                        else
+                            tc.createClass(lexem, ct, security)
+                    }
                     else
                         errors.add(InvalidNameError(line, "$lexem is not valid name of class"))
-                    identifer = Identifer.DEFAULT
-                    security = SecurityDegree.PUBLIC
+                    identifer = DEFAULT
+                    security = PUBLIC
                     isClass = false
                     needEnd = true
                 }
                 isFunction -> {
                     if (typeName.isEmpty()) typeName = lexem
                     else {
-                        val ft: FuncType? = identifer.funcType
-                        if (ft == null) {
-                            errors.add(SyntaxError(line, "Invalid type of function"))
-                        } else {
-                            tc.createMethod(lexem, typeName, security, ft)
+                        if (Regex("\\w+").matches(lexem)) {
+                            val ft: FuncType? = identifer.funcType
+                            if (ft == null) {
+                                errors.add(InvalidNameError(line, "Invalid type of function"))
+                            } else {
+                                //pass
+                            }
                         }
-                        identifer = Identifer.DEFAULT
-                        security = SecurityDegree.PUBLIC
+                        identifer = DEFAULT
+                        security = PUBLIC
                         isFunction = false
                     }
                 }
-                isVar -> {
-                    if (typeName.isEmpty()) typeName = lexem
-                    else {
-                        if (lexem.isPunctuation() or (lexem == exprend)) {
-                            when (identifer) {
-                                Identifer.STATIC -> tc.createStaticField(typeName, "", security)
-                                Identifer.FINAL -> tc.createFinalField(typeName, "", security)
-                                Identifer.DEFAULT -> tc.createField(typeName, "", security)
-                                else -> errors.add(SyntaxError(line, "Invalid type of variable"))
-                            }
-                        } else {
-                            when (identifer) {
-                                Identifer.STATIC -> tc.createStaticField(lexem, typeName, security)
-                                Identifer.FINAL -> tc.createFinalField(lexem, typeName, security)
-                                Identifer.DEFAULT -> tc.createField(lexem, typeName, security)
-                                else -> errors.add(SyntaxError(line, "Invalid type of variable"))
-                            }
-                        }
-                        identifer = Identifer.DEFAULT
-                        security = SecurityDegree.PUBLIC
-                        isVar = false
-                    }
-                }
                 isTypeAlias -> {
-                    tc.createTypeAlias(lexem.removeSuffix(exprend))
+                    tc.createClass(lexem.removeSuffix(exprend), ClassType.TYPEALIAS, security)
                     isTypeAlias = false
+                    identifer = DEFAULT
+                    security = PUBLIC
                 }
                 isFuncAlias -> {
-                    tc.createFuncAlias(lexem.removeSuffix(exprend))
+                    tc.createFunction(lexem.removeSuffix(exprend), "", FuncType.FUNCALIAS)
                     isFuncAlias = false
+                    identifer = DEFAULT
+                    security = PUBLIC
                 }
                 isGoto -> {
                     if (Regex("\\w+").matches(lexem))
-                        tc.goto(lexem)
+                        tc.goToLabel(lexem)
                     else
                         errors.add(InvalidNameError(line, "$lexem is not valid name of label for ${platform.goto_keyword} operator"))
                     isGoto = false
@@ -247,71 +240,93 @@ class Parser {
                 }
                 isIsOp -> {
                     if (Regex("\\w+").matches(lexem))
-                        tc.addIs(lexem)
+                        tc.instanceOf(lexem)
                     else
                         errors.add(InvalidNameError(line, "$lexem is not valid name of type for ${platform.is_keyword} operator"))
                     isIsOp = false
                 }
-                identifer == Identifer.ENUM && lexem != platform.class_keyword -> {
-                    tc.createEnum(lexem, security)
-                    identifer = Identifer.DEFAULT
-                    security = SecurityDegree.PUBLIC
+                isInterface -> {
+                    //isClass
+                }
+                identifer == ENUM && lexem != platform.class_keyword -> {
+                    if (Regex("\\w+").matches(lexem))
+                        tc.createClass(lexem, ClassType.ENUM, security)
+                    else
+                        errors.add(InvalidNameError(line, "$lexem is not valid name of enum"))
+                    identifer = DEFAULT
+                    security = PUBLIC
                 }
                 else -> {
                     platform.run {
                         when (lexem) {
+                            expression_end -> tc.insertExprEnd()
+                            expression_separator -> tc.insertSeparator(isLiteral = false)
+                            separator -> tc.insertSeparator(isLiteral = true)
                             import_keyword -> isImport = true
                             single_comment_start -> singleComment = true
                             multiline_comment_start -> multiComment = true
                             include_keyword -> isInclude = true
                             use_keyword -> isUse = true
                             lib_keyword -> isLib = true
-                            public_keyword -> security = SecurityDegree.PUBLIC
-                            private_keyword -> security = SecurityDegree.PRIVATE
-                            protected_keyword -> security = SecurityDegree.PROTECTED
-                            final_keyword -> identifer = Identifer.FINAL
-                            data_keyword -> identifer = Identifer.DATA
-                            enum_keyword -> identifer = Identifer.ENUM
-                            static_keyword -> identifer = Identifer.STATIC
-                            abstract_keyword -> identifer = Identifer.ABSTRACT
+                            public_keyword -> security = PUBLIC
+                            private_keyword -> security = PRIVATE
+                            protected_keyword -> security = PROTECTED
+                            final_keyword -> identifer = FINAL
+                            data_keyword -> identifer = DATA
+                            enum_keyword -> identifer = ENUM
+                            static_keyword -> identifer = STATIC
+                            abstract_keyword -> identifer = ABSTRACT
+                            virtual_keyword -> identifer = VIRTUAL
+                            override_keyword -> identifer = OVERRIDE
+                            interface_keyword -> isInterface = true
                             class_keyword -> isClass = true
                             function_keyword -> isFunction = true
-                            variable_keyword -> isVar = true
-                            statement_start -> tc.openStatement()
-                            statement_end -> tc.closeStatement()
-                            block_start -> tc.startBlock()
-                            block_end -> tc.endBlock()
-                            break_keyword -> tc.markBreak()
-                            continue_keyword -> tc.markContinue()
+                            variable_keyword -> {
+                                val vt: VarType? = identifer.varType
+                                if (vt == null)
+                                    errors.add(InvalidNameError(line, "Invalid type of variable"))
+                                else
+                                    tc.startVarDefinition(vt, security)
+                            }
+                            statement_start -> tc.statement(start = true)
+                            statement_end -> tc.statement(start = false)
+                            block_start -> tc.block(start = true)
+                            block_end -> tc.block(start = false)
+                            break_keyword -> tc.insertLoopOperator(true)
+                            continue_keyword -> tc.insertLoopOperator(false)
                             throw_operator -> tc.throwException()
-                            assigment_operator -> tc.assignValue()
-                            equals_operator -> tc.equals()
-                            not_equals_operator -> tc.notEquals()
-                            greater_operator -> tc.greaterThen()
-                            less_operator -> tc.lessThen()
-                            gore_operator -> tc.greaterOrEqualsThen()
-                            lore_operator -> tc.lessOrEqualsThen()
-                            multiply_operator -> tc.multiply()
-                            divise_operator -> tc.divide()
-                            modulo_operator -> tc.modulo()
-                            power_operator -> tc.power()
-                            breakpoint_keyword -> tc.markBreakpoint()
+                            assigment_operator -> tc.callOperator(ASSIGN)
+                            equals_operator -> tc.callOperator(EQ)
+                            not_equals_operator -> tc.callOperator(NOTEQ)
+                            greater_operator -> tc.callOperator(GT)
+                            less_operator -> tc.callOperator(LT)
+                            gore_operator -> tc.callOperator(GORE)
+                            lore_operator -> tc.callOperator(LORE)
+                            multiply_operator -> tc.callOperator(MUL)
+                            divise_operator -> tc.callOperator(DIV)
+                            modulo_operator -> tc.callOperator(MOD)
+                            power_operator -> tc.callOperator(POW)
+                            breakpoint_keyword -> tc.insertBreakpoint()
+                            range_operator -> tc.callOperator(RANGE)
                             goto_keyword -> isGoto = true
-                            return_keyword -> tc.addReturn()
+                            return_keyword -> tc.insertReturn()
                             typealias_keyword -> isTypeAlias = true
                             funcalias_keyword -> isFuncAlias = true
                             string_char -> hasString = true
-                            if_keyword -> tc.createIf()
-                            else_keyword -> tc.createElse()
-                            do_keyword -> tc.createDo()
-                            case_keyword -> tc.createCase()
-                            while_keyword -> tc.createWhile()
-                            switch_keyword -> tc.createSwitch()
-                            with_keyword -> tc.createWith()
-                            in_operator -> tc.addIn()
+                            if_keyword -> tc.insertIf()
+                            else_keyword -> tc.insertElse()
+                            do_keyword -> tc.insertLoop(LoopType.DO)
+                            case_keyword -> tc.insertCase()
+                            while_keyword -> tc.insertLoop(LoopType.WHILE)
+                            switch_keyword -> tc.insertSwitch()
+                            with_keyword -> tc.insertWith()
+                            in_operator -> tc.callOperator(IN)
                             convert_operator -> isConvert = true
                             is_keyword -> isIsOp = true
-                            else -> if (lexem != expression_end) tc.callLiteral(lexem)
+                            yield_keyword -> tc.insertYield()
+                            const_keyword -> tc.startVarDefinition(VarType.CONST, security)
+                            interface_keyword -> isInterface = true
+                            else -> tc.callLiteral(lexem)
                         }
                     }
                 }
@@ -331,12 +346,12 @@ class Parser {
                         try {
                             if (buf[index - 1] != '\\') {
                                 hasString = false
-                                tc.loadValue(buffer.removeSuffix(platform.string_char))
+                                tc.callValue(buffer.removeSuffix(platform.string_char))
                             }
                         }
                         catch (e: StringIndexOutOfBoundsException) {
                             hasString = false
-                            tc.loadValue(buffer.removeSuffix(platform.string_char))
+                            tc.callValue(buffer.removeSuffix(platform.string_char))
                         }
                         buffer.clear()
                     }
@@ -389,6 +404,7 @@ class Parser {
             errors.add(SyntaxError(line, "Need end of expression"))
         else
             clearBuffer()
+        tc.insertExprEnd()
     }
 
     protected fun String.isPunctuation(): Boolean {
@@ -399,7 +415,7 @@ class Parser {
     }
 
     fun parse() {
-        tc.setOutput("$appname.tokens")
+        tc.setOutput(appname)
         lexerize()
         if (errors.isNotEmpty()) {
             for (error: TangaraError in errors) {

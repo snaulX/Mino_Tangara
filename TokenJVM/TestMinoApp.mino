@@ -6,7 +6,7 @@ Console.WriteLine("Hello World"); //printing Hello World on the console
 public final class MyClass; //init class with name MyClass
 typealias string;
 funcalias print;
-//var a = 0;
+public static var a = 0;
 a is int;
 import mytest # not error
 /*
@@ -16,4 +16,4 @@ work
 */
 dyalect twoerrors;
 typedef MyTestTypeAlias
-runline some_label //goto operator
+runline some_label # goto operator
