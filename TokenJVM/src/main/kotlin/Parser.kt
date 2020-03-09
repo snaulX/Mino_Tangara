@@ -1,6 +1,6 @@
 /**
  *TODO("Create parsing of all tokens with if without when")
- *TODO("Create char and number parsing")
+ *TODO("Create char parsing")
  *TODO("Optimize")
  *TODO("Fix bugs")
  */
@@ -87,8 +87,10 @@ class Parser {
         var isStruct: Boolean = false
         var isIsOp: Boolean = false
         var needEnd: Boolean = false //check for need of end of expression
+        var isNumber: Boolean = false //means that last lexem was number
+        var isDouble: Boolean = false //means that have number dot or not
         var security: SecurityDegree = PUBLIC
-        var identifer: Identifer = Identifer.DEFAULT
+        var identifer: Identifer = DEFAULT
         var typeName: String = ""
 
         /**
@@ -109,12 +111,12 @@ class Parser {
                         if (lexem == "\n") true
                         else if (exprend.isBlank() &&
                             (lexem == platform.single_comment_start ||
-                             lexem == platform.multiline_comment_start)) {
+                                    lexem == platform.multiline_comment_start)
+                        ) {
                             needEnd = false
                             parseLexem(lexem)
                             false
-                        }
-                        else {
+                        } else {
                             errors.add(
                                 SyntaxError(
                                     line, "End of expression not found. Invalid end is $lexem"
@@ -188,8 +190,7 @@ class Parser {
                             errors.add(InvalidNameError(line, "Invalid type of class"))
                         else
                             tc.createClass(lexem, ct, security)
-                    }
-                    else
+                    } else
                         errors.add(InvalidNameError(line, "$lexem is not valid name of class"))
                     identifer = DEFAULT
                     security = PUBLIC
@@ -212,13 +213,21 @@ class Parser {
                     }
                 }
                 isTypeAlias -> {
-                    tc.createClass(lexem.removeSuffix(exprend), ClassType.TYPEALIAS, security)
+                    val taName: String = lexem.removeSuffix(exprend)
+                    if (Regex("\\w+").matches(taName))
+                        tc.createClass(taName, ClassType.TYPEALIAS, security)
+                    else
+                        errors.add(InvalidNameError(line, "$taName is not valid name of typealias"))
                     isTypeAlias = false
                     identifer = DEFAULT
                     security = PUBLIC
                 }
                 isFuncAlias -> {
-                    tc.createFunction(lexem.removeSuffix(exprend), "", FuncType.FUNCALIAS)
+                    val faName: String = lexem.removeSuffix(exprend)
+                    if (Regex("\\w+").matches(faName))
+                        tc.createFunction(faName, "", FuncType.FUNCALIAS)
+                    else
+                        errors.add(InvalidNameError(line, "$faName is not valid name of funcalias"))
                     isFuncAlias = false
                     identifer = DEFAULT
                     security = PUBLIC
@@ -227,7 +236,12 @@ class Parser {
                     if (Regex("\\w+").matches(lexem))
                         tc.goToLabel(lexem)
                     else
-                        errors.add(InvalidNameError(line, "$lexem is not valid name of label for ${platform.goto_keyword} operator"))
+                        errors.add(
+                            InvalidNameError(
+                                line,
+                                "$lexem is not valid name of label for ${platform.goto_keyword} operator"
+                            )
+                        )
                     isGoto = false
                     needEnd = true
                 }
@@ -242,7 +256,12 @@ class Parser {
                     if (Regex("\\w+").matches(lexem))
                         tc.instanceOf(lexem)
                     else
-                        errors.add(InvalidNameError(line, "$lexem is not valid name of type for ${platform.is_keyword} operator"))
+                        errors.add(
+                            InvalidNameError(
+                                line,
+                                "$lexem is not valid name of type for ${platform.is_keyword} operator"
+                            )
+                        )
                     isIsOp = false
                 }
                 isInterface -> {
@@ -369,8 +388,7 @@ class Parser {
                                 hasString = false
                                 tc.callValue(buffer.removeSuffix(platform.string_char))
                             }
-                        }
-                        catch (e: StringIndexOutOfBoundsException) {
+                        } catch (e: StringIndexOutOfBoundsException) {
                             hasString = false
                             tc.callValue(buffer.removeSuffix(platform.string_char))
                         }
@@ -390,6 +408,58 @@ class Parser {
                     buffer.append(cur)
                     clearBuffer()
                 }
+                isNumber -> {
+                    if (cur.isDigit()) {
+                        buffer.append(cur)
+                    } else if (cur == 'f') {
+                        tc.callValue(buffer.toString().toFloat())
+                        isNumber = false
+                        isDouble = false
+                    } else if (cur == 'd') {
+                        tc.callValue(buffer.toString().toDouble())
+                        isNumber = false
+                        isDouble = false
+                    } else if (cur == 'l') {
+                        if (!isDouble) {
+                            tc.callValue(buffer.toString().toLong())
+                        } else {
+                            errors.add(InvalidNumberError(line, "Number with dot cannot have type short"))
+                        }
+                        isNumber = false
+                    } else if (cur == 's') {
+                        if (!isDouble) {
+                            tc.callValue(buffer.toString().toShort())
+                        } else {
+                            errors.add(InvalidNumberError(line, "Number with dot cannot have type short"))
+                        }
+                        isNumber = false
+                    } else if (cur == 'b') {
+                        if (!isDouble) {
+                            tc.callValue(buffer.toString().toByte())
+                        } else {
+                            errors.add(InvalidNumberError(line, "Number with dot cannot have type byte"))
+                        }
+                        isNumber = false
+                    } else if (cur == '.') {
+                        if (!isDouble) {
+                            isDouble = true
+                            buffer.append('.')
+                        } else {
+                            errors.add(InvalidNumberError(line, "Number cannot have two dots"))
+                            isNumber = false
+                            isDouble = false
+                        }
+                    } else {
+                        if (isDouble) {
+                            tc.callValue(buffer.toString().toDouble())
+                            isDouble = false
+                        } else {
+                            tc.callValue(buffer.toString().toInt())
+                        }
+                        isNumber = false
+                    }
+                    if (!isNumber) buffer.clear()
+                }
                 cur.isWhitespace() -> {
                     clearBuffer()
                     if (cur == '\n') {
@@ -399,7 +469,10 @@ class Parser {
                     }
                 }
                 cur.isJavaIdentifierPart() -> {
-                    if (!prev.isJavaIdentifierPart()) clearBuffer()
+                    if (!prev.isJavaIdentifierPart()) {
+                        clearBuffer()
+                        if (cur.isDigit()) isNumber = true
+                    }
                     buffer.append(cur)
                 } //for digits, letters and _
                 else -> {
@@ -415,13 +488,14 @@ class Parser {
                     if (canTokens.isEmpty()) clearBuffer()
                 } //punctuation
             }
-           pos++
+            pos++
         }
         val buf = buffer.toString()
         if (needEnd || (
-            (buf != platform.expression_end || buf != platform.block_end
-                    || !singleComment || !multiComment)
-            && platform.expression_end.isNotBlank()))
+                    (buf != platform.expression_end || buf != platform.block_end
+                            || !singleComment || !multiComment)
+                            && platform.expression_end.isNotBlank())
+        )
             errors.add(SyntaxError(line, "Need end of expression"))
         else
             clearBuffer()
@@ -437,6 +511,8 @@ class Parser {
 
     fun parse() {
         tc.setOutput(appname)
+        tc.setTargetPlatform()
+        tc.setHeader()
         lexerize()
         if (errors.isNotEmpty()) {
             for (error: TangaraError in errors) {

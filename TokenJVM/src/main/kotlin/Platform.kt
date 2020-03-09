@@ -67,7 +67,6 @@ data class Platform (
     var implements_keyword: String = ":",
     var extends_keyword: String = ":",
     var expression_end: String = ";",
-    var float_separator: String = ".",
     var separator: String = ".",
     var expression_separator: String = ",",
     var nullable: String = "?",

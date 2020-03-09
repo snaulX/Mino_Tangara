@@ -4,15 +4,26 @@ use System; //using namespace System
 include mscorlib; //including base library of .NET
 Console.WriteLine("Hello World"); //printing Hello World on the console
 public final class MyClass; //init class with name MyClass
-typealias string;
+expect typealias string;
 expect funcalias print;
+expect funcalias println;
 #if DOTNET
-    actual funcalias print = Console.WriteLine;
+    actual typealias string = String;
+    actual funcalias print = Console.Write;
+    actual funcalias println = Console.WriteLine;
 #if JVM
+    actual typealias string = String;
     actual funcalias print = System.out.print;
+    actual funcalias println = System.out.println;
 #endif
-public static var a = 0;
-if (a is int) print(a to string);
+public static var float a = 0.342f;
+if (a is int) print(a);
+else a = inputln() to float;
+var string b = "";
+while (b != "Hello World") {
+    print("Input 'Hello World': ");
+    b = inputln();
+}
 import mytest # not error
 /*
 Multiline comment
