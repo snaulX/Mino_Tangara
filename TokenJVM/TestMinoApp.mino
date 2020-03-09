@@ -1,20 +1,37 @@
 import std;//importing platform std
 lib standart; //link tokens library standart
-use System; //using namespace System
-include mscorlib; //including base library of .NET
-Console.WriteLine("Hello World"); //printing Hello World on the console
-public final class MyClass; //init class with name MyClass
+#if DOTNET
+    use System; //using namespace System
+    include mscorlib; //including base library of .NET
+    Console.WriteLine("Hello World"); //printing Hello World on the console
+#endif
+public final class MyClass(internal var string finalField) {
+    ctor {
+        //body of default constructor
+        print("Field is $field"); //format strings
+    }
+
+    internal virtual fun void askField() {
+        print("Enter field please ");
+        field = inputln();
+    }
+
+    public final fun mySomeReturnMethod() = field; //auto-check return type
+}
 expect typealias string;
 expect funcalias print;
 expect funcalias println;
+expect funcalias inputln;
 #if DOTNET
     actual typealias string = String;
     actual funcalias print = Console.Write;
     actual funcalias println = Console.WriteLine;
+    actual funcalias inputln = Console.ReadLine;
 #if JVM
     actual typealias string = String;
     actual funcalias print = System.out.print;
     actual funcalias println = System.out.println;
+    actual funcalias inputln = new Scanner(System.in).nextLine();
 #endif
 public static var float a = 0.342f;
 if (a is int) print(a);
@@ -31,5 +48,12 @@ is
 work
 */
 dyalect twoerrors;
-typedef MyTestTypeAlias
-runline some_label # goto operator
+typedef MyTestTypeAlias := MyClass
+variable MyTestTypeAlias c := create MyTestTypeAlias('MyClass')
+some_label:
+    c->askField()
+    switch begin
+        case c -> mySomeReturnMethod() = 'MyClass': raise new Exception("YOUR VARIABLE NAMED MYCLASS")
+        default: runline some_label # goto operator
+    end
+println(c -> field instanceof string) #true

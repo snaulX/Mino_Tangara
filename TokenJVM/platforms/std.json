@@ -33,5 +33,8 @@
     "with_keyword": "with",
     "try_keyword": "try",
     "catch_keyword": "catch",
-    "finally_keyword": "finally"
+    "finally_keyword": "finally",
+    "new_operator": "new",
+    "struct_keyword": "struct",
+    "separator": "."
 }

@@ -86,6 +86,7 @@ data class Platform (
     var subassign_operator: String = "-=",
     var mulassign_operator: String = "*=",
     var divassign_operator: String = "/=",
+    var modassign_operator: String = "%=",
     var gore_operator: String = ">=",
     var lore_operator: String = "<=",
     var range_operator: String = "..",
@@ -96,5 +97,6 @@ data class Platform (
     var throw_operator: String = "throw",
     var goto_keyword: String = "goto",
     var in_operator: String = "in",
-    var convert_operator: String = "to"
+    var convert_operator: String = "to",
+    var package_keyword: String = "package"
 )

@@ -86,6 +86,7 @@ class Parser {
         var isInterface: Boolean = false
         var isStruct: Boolean = false
         var isIsOp: Boolean = false
+        var isPackage: Boolean = false
         var needEnd: Boolean = false //check for need of end of expression
         var isNumber: Boolean = false //means that last lexem was number
         var isDouble: Boolean = false //means that have number dot or not
@@ -271,6 +272,7 @@ class Parser {
                         errors.add(InvalidNameError(line, "$lexem is not valid name of interface"))
                     identifer = DEFAULT
                     security = PUBLIC
+                    isInterface = false
                 }
                 isStruct -> {
                     if (Regex("\\w+").matches(lexem))
@@ -279,6 +281,15 @@ class Parser {
                         errors.add(InvalidNameError(line, "$lexem is not valid name of struct"))
                     identifer = DEFAULT
                     security = PUBLIC
+                    isStruct = false
+                }
+                isPackage -> {
+                    val packageName: String = lexem.removeSuffix(exprend)
+                    if (Regex("\\w+").matches(packageName))
+                        tc.setPackage(packageName)
+                    else
+                        errors.add(InvalidNameError(line, "$packageName is not valid name of package"))
+                    isPackage = false
                 }
                 identifer == ENUM && lexem != platform.class_keyword -> {
                     if (Regex("\\w+").matches(lexem))
@@ -303,6 +314,7 @@ class Parser {
                             public_keyword -> security = PUBLIC
                             private_keyword -> security = PRIVATE
                             protected_keyword -> security = PROTECTED
+                            internal_keyword -> security = INTERNAL
                             final_keyword -> identifer = FINAL
                             data_keyword -> identifer = DATA
                             enum_keyword -> identifer = ENUM
@@ -335,9 +347,16 @@ class Parser {
                             less_operator -> tc.callOperator(LT)
                             gore_operator -> tc.callOperator(GORE)
                             lore_operator -> tc.callOperator(LORE)
+                            add_operator -> tc.callOperator(ADD)
+                            subtract_operator -> tc.callOperator(SUB)
                             multiply_operator -> tc.callOperator(MUL)
                             divise_operator -> tc.callOperator(DIV)
                             modulo_operator -> tc.callOperator(MOD)
+                            addassign_operator -> tc.callOperator(ADDASSIGN)
+                            subassign_operator -> tc.callOperator(SUBASSIGN)
+                            mulassign_operator -> tc.callOperator(MULASSIGN)
+                            divassign_operator -> tc.callOperator(DIVASSIGN)
+                            modassign_operator -> tc.callOperator(MODASSIGN)
                             power_operator -> tc.callOperator(POW)
                             breakpoint_keyword -> tc.insertBreakpoint()
                             range_operator -> tc.callOperator(RANGE)
@@ -352,6 +371,10 @@ class Parser {
                             case_keyword -> tc.insertCase()
                             while_keyword -> tc.insertLoop(LoopType.WHILE)
                             switch_keyword -> tc.insertSwitch()
+                            default_keyword -> {
+                                tc.insertCase()
+                                tc.callLiteral("_")
+                            }
                             with_keyword -> tc.insertWith()
                             in_operator -> tc.callOperator(IN)
                             convert_operator -> isConvert = true
@@ -366,6 +389,16 @@ class Parser {
                             struct_keyword -> isStruct = true
                             implements_keyword -> tc.implements()
                             extends_keyword -> tc.extends()
+                            actual_keyword -> tc.insertActual(actual = true)
+                            expect_keyword -> tc.insertActual(actual = false)
+                            try_keyword -> tc.insertTry()
+                            catch_keyword -> tc.insertCatch()
+                            finally_keyword -> tc.insertFinally()
+                            nullable -> tc.insertNullable()
+                            package_keyword -> isPackage = true
+                            new_operator -> tc.insertNew()
+                            for_keyword -> tc.insertLoop(LoopType.FOR)
+                            foreach_keyword -> tc.insertLoop(LoopType.FOREACH)
                             else -> tc.callLiteral(lexem)
                         }
                     }

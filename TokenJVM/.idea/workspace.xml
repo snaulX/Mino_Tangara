@@ -41,7 +41,8 @@
       <change beforePath="$PROJECT_DIR$/build/kotlin/compileKotlin/caches-jvm/lookups/lookups.tab.values.at" beforeDir="false" afterPath="$PROJECT_DIR$/build/kotlin/compileKotlin/caches-jvm/lookups/lookups.tab.values.at" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build/kotlin/compileKotlin/caches-jvm/lookups/lookups.tab_i" beforeDir="false" afterPath="$PROJECT_DIR$/build/kotlin/compileKotlin/caches-jvm/lookups/lookups.tab_i" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build/kotlin/compileKotlin/last-build.bin" beforeDir="false" afterPath="$PROJECT_DIR$/build/kotlin/compileKotlin/last-build.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/Errors.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/Errors.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/platforms/mytest.json" beforeDir="false" afterPath="$PROJECT_DIR$/platforms/mytest.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/platforms/std.json" beforeDir="false" afterPath="$PROJECT_DIR$/platforms/std.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/Parser.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/Parser.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/Platform.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/Platform.kt" afterDir="false" />
     </list>
@@ -218,25 +219,25 @@
       <screen x="0" y="0" width="1536" height="824" />
     </state>
     <state x="549" y="168" key="FileChooserDialogImpl/0.0.1536.824@0.0.1536.824" timestamp="1582541653713" />
-    <state width="1493" height="175" key="GridCell.Tab.0.bottom" timestamp="1583729027188">
+    <state width="1493" height="175" key="GridCell.Tab.0.bottom" timestamp="1583732300406">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="175" key="GridCell.Tab.0.bottom/0.0.1536.824@0.0.1536.824" timestamp="1583729027188" />
+    <state width="1493" height="175" key="GridCell.Tab.0.bottom/0.0.1536.824@0.0.1536.824" timestamp="1583732300406" />
     <state width="1557" height="221" key="GridCell.Tab.0.bottom/0.0.1600.860@0.0.1600.860" timestamp="1583248478544" />
-    <state width="1493" height="175" key="GridCell.Tab.0.center" timestamp="1583729027188">
+    <state width="1493" height="175" key="GridCell.Tab.0.center" timestamp="1583732300406">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="175" key="GridCell.Tab.0.center/0.0.1536.824@0.0.1536.824" timestamp="1583729027188" />
+    <state width="1493" height="175" key="GridCell.Tab.0.center/0.0.1536.824@0.0.1536.824" timestamp="1583732300406" />
     <state width="1557" height="221" key="GridCell.Tab.0.center/0.0.1600.860@0.0.1600.860" timestamp="1583248478544" />
-    <state width="1493" height="175" key="GridCell.Tab.0.left" timestamp="1583729027188">
+    <state width="1493" height="175" key="GridCell.Tab.0.left" timestamp="1583732300406">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="175" key="GridCell.Tab.0.left/0.0.1536.824@0.0.1536.824" timestamp="1583729027188" />
+    <state width="1493" height="175" key="GridCell.Tab.0.left/0.0.1536.824@0.0.1536.824" timestamp="1583732300406" />
     <state width="1557" height="221" key="GridCell.Tab.0.left/0.0.1600.860@0.0.1600.860" timestamp="1583248478544" />
-    <state width="1493" height="175" key="GridCell.Tab.0.right" timestamp="1583729027188">
+    <state width="1493" height="175" key="GridCell.Tab.0.right" timestamp="1583732300406">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="175" key="GridCell.Tab.0.right/0.0.1536.824@0.0.1536.824" timestamp="1583729027188" />
+    <state width="1493" height="175" key="GridCell.Tab.0.right/0.0.1536.824@0.0.1536.824" timestamp="1583732300406" />
     <state width="1557" height="221" key="GridCell.Tab.0.right/0.0.1600.860@0.0.1600.860" timestamp="1583248478544" />
     <state x="249" y="0" key="SettingsEditor" timestamp="1582482565844">
       <screen x="0" y="0" width="1536" height="824" />
@@ -247,9 +248,9 @@
       <screen x="0" y="0" width="1536" height="824" />
     </state>
     <state x="209" y="25" key="new project wizard/0.0.1536.824@0.0.1536.824" timestamp="1582482557293" />
-    <state x="431" y="145" width="672" height="678" key="search.everywhere.popup" timestamp="1583725524180">
+    <state x="431" y="145" width="672" height="678" key="search.everywhere.popup" timestamp="1583731733421">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state x="431" y="145" width="672" height="678" key="search.everywhere.popup/0.0.1536.824@0.0.1536.824" timestamp="1583725524180" />
+    <state x="431" y="145" width="672" height="678" key="search.everywhere.popup/0.0.1536.824@0.0.1536.824" timestamp="1583731733421" />
   </component>
 </project>

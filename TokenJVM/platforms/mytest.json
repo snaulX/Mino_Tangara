@@ -29,5 +29,9 @@
     "divise_operator": "div",
     "switch_keyword": "case",
     "data_keyword": "record",
-    "class_keyword": "type"
+    "class_keyword": "type",
+    "string_char": "'",
+    "new_operator": "create",
+    "variable_keyword": "variable",
+    "separator": "->"
 }
