@@ -358,6 +358,8 @@ class Parser {
                             divassign_operator -> tc.callOperator(DIVASSIGN)
                             modassign_operator -> tc.callOperator(MODASSIGN)
                             power_operator -> tc.callOperator(POW)
+                            increment_operator -> tc.callOperator(INC)
+                            decrement_operator -> tc.callOperator(DEC)
                             breakpoint_keyword -> tc.insertBreakpoint()
                             range_operator -> tc.callOperator(RANGE)
                             goto_keyword -> isGoto = true
@@ -365,6 +367,12 @@ class Parser {
                             typealias_keyword -> isTypeAlias = true
                             funcalias_keyword -> isFuncAlias = true
                             string_char -> hasString = true
+                            else_if_keyword -> {
+                                if (else_if_keyword.isNotBlank()) {
+                                    tc.insertElse()
+                                    tc.insertIf()
+                                }
+                            }
                             if_keyword -> tc.insertIf()
                             else_keyword -> tc.insertElse()
                             do_keyword -> tc.insertLoop(LoopType.DO)
@@ -476,12 +484,14 @@ class Parser {
                     } else if (cur == '.') {
                         if (!isDouble) {
                             isDouble = true
-                            buffer.append('.')
                         } else {
-                            errors.add(InvalidNumberError(line, "Number cannot have two dots"))
+                            tc.callValue(buffer.toString().toDouble())
+                            buffer.clear()
+                            if (prev == '.') buffer.append('.')
                             isNumber = false
                             isDouble = false
                         }
+                        buffer.append('.')
                     } else {
                         if (isDouble) {
                             tc.callValue(buffer.toString().toDouble())

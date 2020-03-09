@@ -33,5 +33,6 @@
     "string_char": "'",
     "new_operator": "create",
     "variable_keyword": "variable",
-    "separator": "->"
+    "separator": "->",
+    "else_if_keyword": "elif"
 }

@@ -33,6 +33,11 @@ expect funcalias inputln;
     actual funcalias println = System.out.println;
     actual funcalias inputln = new Scanner(System.in).nextLine();
 #endif
+private fun string repeat(MyClass repeatable, short count = 5s) {
+    var string ret = "";
+    for (int i in 0..count) ret += repeatable.field;
+    return ret;
+}
 public static var float a = 0.342f;
 if (a is int) print(a);
 else a = inputln() to float;
@@ -57,3 +62,4 @@ some_label:
         default: runline some_label # goto operator
     end
 println(c -> field instanceof string) #true
+println(repeat(c, 10s))

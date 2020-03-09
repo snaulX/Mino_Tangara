@@ -36,5 +36,6 @@
     "finally_keyword": "finally",
     "new_operator": "new",
     "struct_keyword": "struct",
-    "separator": "."
+    "separator": ".",
+    "else_if_keyword": ""
 }

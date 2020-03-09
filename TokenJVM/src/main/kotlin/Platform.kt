@@ -26,6 +26,7 @@ data class Platform (
     var finally_keyword: String = "finally",
     var if_keyword: String = "if",
     var else_keyword: String = "else",
+    var else_if_keyword: String = "",
     var while_keyword: String = "while",
     var do_keyword: String = "do",
     var for_keyword: String = "for",
