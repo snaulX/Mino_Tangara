@@ -37,6 +37,8 @@ class Parser {
             }
         }
     private val punctation_keywords: MutableList<String> = mutableListOf()
+    var targetPlatform: PlatformType = PlatformType.Common
+    var header: HeaderType = HeaderType.Script
 
     fun checkPunctuation() {
         punctation_keywords.clear()
@@ -407,6 +409,7 @@ class Parser {
                             new_operator -> tc.insertNew()
                             for_keyword -> tc.insertLoop(LoopType.FOR)
                             foreach_keyword -> tc.insertLoop(LoopType.FOREACH)
+                            directive_start -> tc.insertDirective()
                             else -> tc.callLiteral(lexem)
                         }
                     }
@@ -554,8 +557,8 @@ class Parser {
 
     fun parse() {
         tc.setOutput(appname)
-        tc.setTargetPlatform()
-        tc.setHeader()
+        tc.setTargetPlatform(targetPlatform)
+        tc.setHeader(header)
         lexerize()
         if (errors.isNotEmpty()) {
             for (error: TangaraError in errors) {
