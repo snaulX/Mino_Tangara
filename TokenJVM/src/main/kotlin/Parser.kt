@@ -339,8 +339,10 @@ class Parser {
                             statement_end -> tc.statement(start = false)
                             block_start -> tc.block(start = true)
                             block_end -> tc.block(start = false)
-                            break_keyword -> tc.insertLoopOperator(true)
-                            continue_keyword -> tc.insertLoopOperator(false)
+                            array_start -> tc.sequence(start = true)
+                            array_end -> tc.sequence(start = false)
+                            break_keyword -> tc.insertLoopOperator(_break = true)
+                            continue_keyword -> tc.insertLoopOperator(_break = false)
                             throw_operator -> tc.throwException()
                             assigment_operator -> tc.callOperator(ASSIGN)
                             equals_operator -> tc.callOperator(EQ)
@@ -365,7 +367,8 @@ class Parser {
                             breakpoint_keyword -> tc.insertBreakpoint()
                             range_operator -> tc.callOperator(RANGE)
                             goto_keyword -> isGoto = true
-                            return_keyword -> tc.insertReturn()
+                            return_keyword -> tc.insertReturn(short = false)
+                            short_return_operator -> tc.insertReturn(short = true)
                             typealias_keyword -> isTypeAlias = true
                             funcalias_keyword -> isFuncAlias = true
                             string_char -> hasString = true
@@ -411,6 +414,10 @@ class Parser {
                             foreach_keyword -> tc.insertLoop(LoopType.FOREACH)
                             directive_start -> tc.insertDirective()
                             after_case_operator -> tc.insertLambda(lambda = false)
+                            lambda_operator -> tc.insertLambda(lambda = true)
+                            true_value -> tc.callValue(true)
+                            false_value -> tc.callValue(false)
+                            null_value -> tc.callValue(null)
                             else -> tc.callLiteral(lexem)
                         }
                     }

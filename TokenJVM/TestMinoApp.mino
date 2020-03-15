@@ -21,17 +21,18 @@ public final class MyClass(internal var string field) {
 expect typealias string;
 expect funcalias print;
 expect funcalias println;
-expect funcalias inputln;
+expect fun inputln(); //we don`t know it`s function or funcalias
 #if DOTNET
     actual typealias string = String;
     actual funcalias print = Console.Write;
     actual funcalias println = Console.WriteLine;
-    actual funcalias inputln = Console.ReadLine;
+    actual funcalias someFunc = Console.ReadLine(); //get only method without arguments
 #if JVM
     actual typealias string = String;
     actual funcalias print = System.out.print;
     actual funcalias println = System.out.println;
-    actual funcalias inputln = new Scanner(System.in).nextLine;
+    //actual funcalias inputln = new Scanner(System.in).nextLine; //Error. We can alias only static methods
+    actual fun inputln() => new Scanner.nextLine(); //so good working
 #endif
 private fun string repeat(MyClass repeatable, short count = 5s) {
     var string ret = "";

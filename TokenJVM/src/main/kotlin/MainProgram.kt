@@ -50,14 +50,20 @@ fun main(args: Array<String>) {
             }
             arg_index = args.indexOf("-target")
             if (arg_index > 0) {
+                var targetName = ""
                 try {
-                    parser.targetPlatform = PlatformType.valueOf(args[++arg_index])
+                    targetName = args[++arg_index]
+                    parser.targetPlatform = PlatformType.valueOf(targetName)
                     if (parser.targetPlatform == PlatformType.Other) {
                         //while nothing
                     }
-                } catch (e: Exception) {
+                } catch (e: IndexOutOfBoundsException) {
                     throw InvalidCommandLineArgumentException(
-                        "Name of target platform not found or invalid"
+                        "Name of target platform not found"
+                    )
+                } catch (e: IllegalArgumentException) {
+                    throw InvalidCommandLineArgumentException(
+                        "Name of target platform '$targetName' is invalid"
                     )
                 }
             } else {
@@ -65,11 +71,17 @@ fun main(args: Array<String>) {
             }
             arg_index = args.indexOf("-type")
             if (arg_index > 0) {
+                var typeName = ""
                 try {
-                    parser.header = HeaderType.valueOf(args[arg_index + 1])
-                } catch (e: Exception) {
+                    typeName = args[arg_index + 1]
+                    parser.header = HeaderType.valueOf(typeName)
+                } catch (e: IndexOutOfBoundsException) {
                     throw InvalidCommandLineArgumentException(
-                        "Name of type of compiling program not found or invalid"
+                        "Name of type of compiling program not found"
+                    )
+                } catch (e: IllegalArgumentException) {
+                    throw InvalidCommandLineArgumentException(
+                        "Name of type of compiling program '$typeName' is invalid"
                     )
                 }
             } else {

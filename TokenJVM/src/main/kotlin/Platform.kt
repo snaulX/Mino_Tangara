@@ -100,7 +100,10 @@ data class Platform (
     var in_operator: String = "in",
     var convert_operator: String = "to",
     var package_keyword: String = "package",
-    var short_return: String = "=>",
+    var short_return_operator: String = "=>",
     var lambda_operator: String = "->",
-    var after_case_operator: String = ":"
+    var after_case_operator: String = ":",
+    var null_value: String = "null",
+    var false_value: String = "false",
+    var true_value: String = "true"
 )
