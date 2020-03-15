@@ -99,5 +99,8 @@ data class Platform (
     var goto_keyword: String = "goto",
     var in_operator: String = "in",
     var convert_operator: String = "to",
-    var package_keyword: String = "package"
+    var package_keyword: String = "package",
+    var short_return: String = "=>",
+    var lambda_operator: String = "->",
+    var after_case_operator: String = ":"
 )

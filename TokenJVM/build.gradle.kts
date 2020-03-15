@@ -25,6 +25,13 @@ tasks {
     compileTestKotlin {
         kotlinOptions.jvmTarget = "1.8"
     }
+    jar {
+        archiveFileName.set("Tangara.jar")
+        manifest {
+            attributes("Main-Class" to "com.snaulX.Tangara.MainProgramKt",
+            "Class-Path" to configurations.compileClasspath.name)
+        }
+    }
     /*val dokka by getting(DokkaTask::class) {
         outputFormat = "md"
         outputDirectory = "docs"

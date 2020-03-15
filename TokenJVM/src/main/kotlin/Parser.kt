@@ -410,6 +410,7 @@ class Parser {
                             for_keyword -> tc.insertLoop(LoopType.FOR)
                             foreach_keyword -> tc.insertLoop(LoopType.FOREACH)
                             directive_start -> tc.insertDirective()
+                            after_case_operator -> tc.insertLambda(lambda = false)
                             else -> tc.callLiteral(lexem)
                         }
                     }

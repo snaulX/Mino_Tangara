@@ -5,7 +5,7 @@ lib standart; //link tokens library standart
     include mscorlib; //including base library of .NET
     Console.WriteLine("Hello World"); //printing Hello World on the console
 #endif
-public final class MyClass(internal var string finalField) {
+public final class MyClass(internal var string field) {
     ctor {
         //body of default constructor
         print("Field is $field"); //format strings
@@ -31,7 +31,7 @@ expect funcalias inputln;
     actual typealias string = String;
     actual funcalias print = System.out.print;
     actual funcalias println = System.out.println;
-    actual funcalias inputln = new Scanner(System.in).nextLine();
+    actual funcalias inputln = new Scanner(System.in).nextLine;
 #endif
 private fun string repeat(MyClass repeatable, short count = 5s) {
     var string ret = "";
