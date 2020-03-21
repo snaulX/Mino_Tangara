@@ -3,7 +3,7 @@
   <component name="FacetManager">
     <facet type="kotlin-language" name="Kotlin">
       <configuration version="3" platform="Native " allPlatforms="Native []" useProjectSettings="false" isTestModule="true" externalProjectId="Tangara">
-        <dependsOnModuleNames>Tangara_commonTest</dependsOnModuleNames>
+        <dependsOnModuleNames>Tangara:commonTest</dependsOnModuleNames>
         <sourceSets>
           <sourceSet>Tangara.mingwMain</sourceSet>
         </sourceSets>

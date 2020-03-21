@@ -12,8 +12,10 @@ import com.snaulX.TokensAPI.*
 import com.snaulX.TokensAPI.OperatorType.*
 import com.snaulX.Tangara.Identifer.*
 import com.snaulX.TokensAPI.SecurityDegree.*
-import com.fasterxml.jackson.module.kotlin.*
-import java.io.*
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
+import java.io.File
+import java.io.FileNotFoundException
 import java.lang.StringBuilder
 import kotlin.reflect.full.memberProperties
 
@@ -84,11 +86,11 @@ class Parser {
         var isGoto: Boolean = false
         var isTypeAlias: Boolean = false
         var isFuncAlias: Boolean = false
-        var isConvert: Boolean = false
         var isInterface: Boolean = false
         var isStruct: Boolean = false
         var isIsOp: Boolean = false
         var isPackage: Boolean = false
+        var isOperator: Boolean = false
         var needEnd: Boolean = false //check for need of end of expression
         var isNumber: Boolean = false //means that last lexem was number
         var isDouble: Boolean = false //means that have number dot or not
@@ -207,12 +209,22 @@ class Parser {
                             if (ft == null) {
                                 errors.add(InvalidNameError(line, "Invalid type of function"))
                             } else {
-                                //pass
+                                tc.createFunction(lexem, typeName, ft)
                             }
+                        } else if (typeName.isNotEmpty()) {
+                            val ft: FuncType? = identifer.funcType
+                            if (ft == null) {
+                                errors.add(InvalidNameError(line, "Invalid type of function"))
+                            } else {
+                                tc.createFunction(typeName, "", ft)
+                            }
+                        } else {
+                            errors.add(InvalidNameError(line, "$lexem is invalid name of function"))
                         }
                         identifer = DEFAULT
                         security = PUBLIC
                         isFunction = false
+                        typeName = ""
                     }
                 }
                 isTypeAlias -> {
@@ -247,13 +259,6 @@ class Parser {
                         )
                     isGoto = false
                     needEnd = true
-                }
-                isConvert -> {
-                    if (Regex("\\w+").matches(lexem))
-                        tc.convertTo(lexem)
-                    else
-                        errors.add(InvalidNameError(line, "$lexem is not valid name of type for convert operator"))
-                    isConvert = false
                 }
                 isIsOp -> {
                     if (Regex("\\w+").matches(lexem))
@@ -292,6 +297,10 @@ class Parser {
                     else
                         errors.add(InvalidNameError(line, "$packageName is not valid name of package"))
                     isPackage = false
+                }
+                isOperator -> {
+                    tc.createFunction("", lexem, FuncType.OPERATOR)
+                    isOperator = false
                 }
                 identifer == ENUM && lexem != platform.class_keyword -> {
                     if (Regex("\\w+").matches(lexem))
@@ -390,7 +399,7 @@ class Parser {
                             }
                             with_keyword -> tc.insertWith()
                             in_operator -> tc.callOperator(IN)
-                            convert_operator -> isConvert = true
+                            convert_operator -> tc.callOperator(CONVERTTO)
                             is_keyword -> isIsOp = true
                             yield_keyword -> tc.insertYield()
                             const_keyword -> {
@@ -418,6 +427,7 @@ class Parser {
                             true_value -> tc.callValue(true)
                             false_value -> tc.callValue(false)
                             null_value -> tc.callValue(null)
+                            operator_keyword -> isOperator = true
                             else -> tc.callLiteral(lexem)
                         }
                     }

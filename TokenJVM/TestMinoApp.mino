@@ -59,8 +59,9 @@ variable MyTestTypeAlias c := create MyTestTypeAlias('MyClass')
 some_label:
     c->askField()
     switch begin
-        case c -> mySomeReturnMethod() = 'MyClass': raise new Exception("YOUR VARIABLE NAMED MYCLASS")
+        case c -> mySomeReturnMethod() = 'MyClass': raise create Exception('YOUR VARIABLE NAMED MYCLASS')
         default: runline some_label # goto operator
     end
 println(c -> field instanceof string) #true
 println(repeat(c, 10s))
+operator int
