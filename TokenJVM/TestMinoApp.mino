@@ -40,8 +40,8 @@ private fun string repeat(MyClass repeatable, short count = 5s) {
     return ret;
 }
 public static var float a = 0.342f;
-if (a is int) print(a);
-else a = inputln() to float;
+if (a is int) print(a); //smart cast
+else a = inputln() to int;
 var string b = "";
 while (b != "Hello World") {
     print("Input 'Hello World': ");
@@ -58,10 +58,14 @@ typedef MyTestTypeAlias := MyClass
 variable MyTestTypeAlias c := create MyTestTypeAlias('MyClass')
 some_label:
     c->askField()
-    switch begin
+    switch
+    begin
         case c -> mySomeReturnMethod() = 'MyClass': raise create Exception('YOUR VARIABLE NAMED MYCLASS')
         default: runline some_label # goto operator
     end
 println(c -> field instanceof string) #true
 println(repeat(c, 10s))
-operator int
+operator int +(MyTestTypeAlias left, MyTestTypeAlias right)
+begin
+    return left -> mySomeReturnMethod() -> length + right -> mySomeReturnMethod() -> length
+end

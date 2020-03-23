@@ -1,8 +1,9 @@
 /**
  *TODO("Create parsing of all tokens with if without when")
- *TODO("Create char parsing")
+ *TODO("Create interpolation")
  *TODO("Optimize")
  *TODO("Fix bugs")
+ *TODO("Create directives")
  */
 
 package com.snaulX.Tangara
@@ -31,13 +32,11 @@ class Parser {
     private val cur: Char
         get() = code[pos]
     private val prev: Char
-        get() {
-            return try {
+        get() = try {
                 code[pos - 1]
             } catch (e: StringIndexOutOfBoundsException) {
                 ' '
             }
-        }
     private val punctation_keywords: MutableList<String> = mutableListOf()
     var targetPlatform: PlatformType = PlatformType.Common
     var header: HeaderType = HeaderType.Script
@@ -77,6 +76,7 @@ class Parser {
         var singleComment: Boolean = false
         var multiComment: Boolean = false
         var hasString: Boolean = false
+        var hasChar: Boolean = false
         var isLib: Boolean = false
         var isImport: Boolean = false
         var isUse: Boolean = false
@@ -343,6 +343,7 @@ class Parser {
                                 else
                                     tc.startVarDefinition(vt, security)
                                 identifer = DEFAULT
+                                security = PUBLIC
                             }
                             statement_start -> tc.statement(start = true)
                             statement_end -> tc.statement(start = false)
@@ -381,11 +382,10 @@ class Parser {
                             typealias_keyword -> isTypeAlias = true
                             funcalias_keyword -> isFuncAlias = true
                             string_char -> hasString = true
+                            char_char -> hasChar = true
                             else_if_keyword -> {
-                                if (else_if_keyword.isNotBlank()) {
-                                    tc.insertElse()
-                                    tc.insertIf()
-                                }
+                                tc.insertElse()
+                                tc.insertIf()
                             }
                             if_keyword -> tc.insertIf()
                             else_keyword -> tc.insertElse()
@@ -428,6 +428,10 @@ class Parser {
                             false_value -> tc.callValue(false)
                             null_value -> tc.callValue(null)
                             operator_keyword -> isOperator = true
+                            readonly_keyword -> {
+                                tc.startVarDefinition(VarType.FINAL, security)
+                                security = PUBLIC
+                            }
                             else -> tc.callLiteral(lexem)
                         }
                     }
@@ -456,6 +460,20 @@ class Parser {
                         }
                         buffer.clear()
                     }
+                } else if (hasChar) {
+                    val index = buf.lastIndexOf(platform.char_char)
+                    if (index >= 0) {
+                        try {
+                            if (buf[index - 1] != '\\') {
+                                hasChar = false
+                                tc.callValue(buffer.removeSuffix(platform.char_char))
+                            }
+                        } catch (e: StringIndexOutOfBoundsException) {
+                            hasChar = false
+                            tc.callValue(buffer.removeSuffix(platform.char_char).single())
+                        }
+                        buffer.clear()
+                    }
                 } else {
                     if (parseLexem(buf)) buffer.clear()
                 }
@@ -466,7 +484,7 @@ class Parser {
         checkPunctuation()
         while (pos < code.length) {
             when {
-                hasString -> {
+                hasString || hasChar -> {
                     buffer.append(cur)
                     clearBuffer()
                 }
@@ -566,7 +584,7 @@ class Parser {
         tc.insertExprEnd()
     }
 
-    protected fun String.isPunctuation(): Boolean {
+    private fun String.isPunctuation(): Boolean {
         for (c in this) {
             if (c.isJavaIdentifierPart() || c.isWhitespace()) return false
         }

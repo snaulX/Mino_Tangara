@@ -38,7 +38,6 @@ data class Platform (
     var operator_keyword: String = "operator",
     var struct_keyword: String = "struct",
     var annotaion_start: String = "@",
-    var annotaion_end: String = "",
     var array_start: String = "[",
     var array_end: String = "]",
     var statement_start: String = "(",
@@ -105,5 +104,6 @@ data class Platform (
     var after_case_operator: String = ":",
     var null_value: String = "null",
     var false_value: String = "false",
-    var true_value: String = "true"
+    var true_value: String = "true",
+    var readonly_keyword: String = "val"
 )
