@@ -18,6 +18,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import java.io.File
 import java.io.FileNotFoundException
 import java.lang.StringBuilder
+import kotlin.reflect.full.instanceParameter
 import kotlin.reflect.full.memberProperties
 
 class Parser {
@@ -91,6 +92,8 @@ class Parser {
         var isIsOp: Boolean = false
         var isPackage: Boolean = false
         var isOperator: Boolean = false
+        var isDirective: Boolean = false
+        var replaceKeyword: String = ""
         var needEnd: Boolean = false //check for need of end of expression
         var isNumber: Boolean = false //means that last lexem was number
         var isDouble: Boolean = false //means that have number dot or not
@@ -209,14 +212,14 @@ class Parser {
                             if (ft == null) {
                                 errors.add(InvalidNameError(line, "Invalid type of function"))
                             } else {
-                                tc.createFunction(lexem, typeName, ft)
+                                tc.createFunction(lexem, typeName, ft, security)
                             }
                         } else if (typeName.isNotEmpty()) {
                             val ft: FuncType? = identifer.funcType
                             if (ft == null) {
                                 errors.add(InvalidNameError(line, "Invalid type of function"))
                             } else {
-                                tc.createFunction(typeName, "", ft)
+                                tc.createFunction(typeName, "", ft, security)
                             }
                         } else {
                             errors.add(InvalidNameError(line, "$lexem is invalid name of function"))
@@ -240,7 +243,7 @@ class Parser {
                 isFuncAlias -> {
                     val faName: String = lexem.removeSuffix(exprend)
                     if (Regex("\\w+").matches(faName))
-                        tc.createFunction(faName, "", FuncType.FUNCALIAS)
+                        tc.createFunction(faName, "", FuncType.FUNCALIAS, security)
                     else
                         errors.add(InvalidNameError(line, "$faName is not valid name of funcalias"))
                     isFuncAlias = false
@@ -299,8 +302,24 @@ class Parser {
                     isPackage = false
                 }
                 isOperator -> {
-                    tc.createFunction("", lexem, FuncType.OPERATOR)
+                    tc.createFunction("", lexem, FuncType.OPERATOR, security)
                     isOperator = false
+                    security = PUBLIC
+                }
+                isDirective -> {
+                    if (lexem == "keyword") {
+                        replaceKeyword = "true"
+                    } else {
+                        tc.insertDirective()
+                        tc.callLiteral(lexem)
+                    }
+                    isDirective = false
+                }
+                replaceKeyword == "true" -> {
+                    replaceKeyword = lexem
+                }
+                replaceKeyword.isNotEmpty() -> run {
+                    //okay while do noting
                 }
                 identifer == ENUM && lexem != platform.class_keyword -> {
                     if (Regex("\\w+").matches(lexem))
@@ -421,7 +440,7 @@ class Parser {
                             new_operator -> tc.insertNew()
                             for_keyword -> tc.insertLoop(LoopType.FOR)
                             foreach_keyword -> tc.insertLoop(LoopType.FOREACH)
-                            directive_start -> tc.insertDirective()
+                            directive_start -> isDirective = true
                             after_case_operator -> tc.insertLambda(lambda = false)
                             lambda_operator -> tc.insertLambda(lambda = true)
                             true_value -> tc.callValue(true)
