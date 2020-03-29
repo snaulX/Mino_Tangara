@@ -91,6 +91,7 @@ class Parser {
         var isPackage: Boolean = false
         var isOperator: Boolean = false
         var isDirective: Boolean = false
+        var isCtor: Boolean = false
         var replaceKeyword: String = ""
         var needEnd: Boolean = false //check for need of end of expression
         var isNumber: Boolean = false //means that last lexem was number
@@ -145,47 +146,26 @@ class Parser {
                     needEnd = true
                 }
                 isInclude -> {
-                    val name = lexem.substring(lexem.length / 2)
-                    if (name.endsWith(exprend)) {
-                        tc.include(name.removeSuffix(exprend))
-                        buffer.clear()
+                    if (lexem.endsWith(exprend)) {
+                        tc.include(lexem.removeSuffix(exprend))
                         isInclude = false
                     } else {
-                        try {
-                            buffer.append(Regex("""(\w+|\.|\\|/)""").find(lexem)!!.destructured.component1())
-                        } catch (e: KotlinNullPointerException) {
-                            errors.add(InvalidNameError(line, "$name is not valid including library name"))
-                        }
                         return false
                     }
                 }
                 isUse -> {
-                    val name = lexem.substring(lexem.length / 2)
-                    if (name.endsWith(exprend)) {
-                        tc.importPackage(name.removeSuffix(exprend))
-                        buffer.clear()
+                    if (lexem.endsWith(exprend)) {
+                        tc.importPackage(lexem.removeSuffix(exprend))
                         isUse = false
                     } else {
-                        try {
-                            buffer.append(Regex("""(\w+|\.)""").find(lexem)!!.destructured.component1())
-                        } catch (e: KotlinNullPointerException) {
-                            errors.add(InvalidNameError(line, "$name is not valid using package (namespace) name"))
-                        }
                         return false
                     }
                 }
                 isLib -> {
-                    val name = lexem.substring(lexem.length / 2)
-                    if (name.endsWith(exprend)) {
-                        tc.importLibrary(name.removeSuffix(exprend))
-                        buffer.clear()
+                    if (lexem.endsWith(exprend)) {
+                        tc.importLibrary(lexem.removeSuffix(exprend))
                         isLib = false
                     } else {
-                        try {
-                            buffer.append(Regex("""(\w+|\.|\\|/)""").find(lexem)!!.destructured.component1())
-                        } catch (e: KotlinNullPointerException) {
-                            errors.add(InvalidNameError(line, "$name is not valid tokens library name"))
-                        }
                         return false
                     }
                 }
@@ -292,12 +272,12 @@ class Parser {
                     isStruct = false
                 }
                 isPackage -> {
-                    val packageName: String = lexem.removeSuffix(exprend)
-                    if (Regex("\\w+").matches(packageName))
-                        tc.setPackage(packageName)
-                    else
-                        errors.add(InvalidNameError(line, "$packageName is not valid name of package"))
-                    isPackage = false
+                    if (lexem.endsWith(exprend)) {
+                        tc.setPackage(lexem.removeSuffix(exprend))
+                        isPackage = false
+                    } else {
+                        return false
+                    }
                 }
                 isOperator -> {
                     tc.createFunction("", lexem, FuncType.OPERATOR, security)
@@ -308,11 +288,13 @@ class Parser {
                     if (lexem != "\n") tc.callLiteral(lexem)
                     else isDirective = false
                 }
-                replaceKeyword == "true" -> {
-                    replaceKeyword = lexem
-                }
-                replaceKeyword.isNotEmpty() -> run {
-                    //okay while do noting
+                isCtor -> {
+                    var name: String = ""
+                    if (lexem != platform.statement_start || lexem != platform.block_start)
+                        name = lexem
+                    tc.createFunction(name, "", FuncType.CONSTRUCTOR, security)
+                    security = PUBLIC
+                    isCtor = false
                 }
                 identifer == ENUM && lexem != platform.class_keyword -> {
                     if (Regex("\\w+").matches(lexem))
@@ -447,6 +429,7 @@ class Parser {
                                 tc.startVarDefinition(VarType.FINAL, security)
                                 security = PUBLIC
                             }
+                            constructor_keyword -> isCtor = true
                             else -> tc.callLiteral(lexem)
                         }
                     }

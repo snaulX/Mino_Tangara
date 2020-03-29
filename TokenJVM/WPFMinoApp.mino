@@ -5,12 +5,14 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 
+namespace com.snaulX.MinoApps.Wpf;
+
 class MainWindow() extends Window() {
 
     public readonly Button button = new Button();
     private var int counter = 0;
 
-    ctor {
+    constructor {
         this.Title = "Created on Mino with love by snaulX";
         button.Background = Brushes.Pink;
         button.Content = "Click me!";

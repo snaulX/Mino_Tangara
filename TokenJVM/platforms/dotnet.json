@@ -9,5 +9,6 @@
     "extends_keyword": "extends",
     "implements_keyword": "implements",
     "new_operator": "new",
-    "readonly_keyword": "readonly"
+    "readonly_keyword": "readonly",
+    "constructor_keyword": "constructor"
 }
