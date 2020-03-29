@@ -3,7 +3,6 @@
  *TODO("Create interpolation")
  *TODO("Optimize")
  *TODO("Fix bugs")
- *TODO("Create directives")
  */
 
 package com.snaulX.Tangara
@@ -18,7 +17,6 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import java.io.File
 import java.io.FileNotFoundException
 import java.lang.StringBuilder
-import kotlin.reflect.full.instanceParameter
 import kotlin.reflect.full.memberProperties
 
 class Parser {
@@ -307,13 +305,8 @@ class Parser {
                     security = PUBLIC
                 }
                 isDirective -> {
-                    if (lexem == "keyword") {
-                        replaceKeyword = "true"
-                    } else {
-                        tc.insertDirective()
-                        tc.callLiteral(lexem)
-                    }
-                    isDirective = false
+                    if (lexem != "\n") tc.callLiteral(lexem)
+                    else isDirective = false
                 }
                 replaceKeyword == "true" -> {
                     replaceKeyword = lexem
@@ -440,7 +433,10 @@ class Parser {
                             new_operator -> tc.insertNew()
                             for_keyword -> tc.insertLoop(LoopType.FOR)
                             foreach_keyword -> tc.insertLoop(LoopType.FOREACH)
-                            directive_start -> isDirective = true
+                            directive_start -> {
+                                tc.insertDirective()
+                                isDirective = true
+                            }
                             after_case_operator -> tc.insertLambda(lambda = false)
                             lambda_operator -> tc.insertLambda(lambda = true)
                             true_value -> tc.callValue(true)
@@ -592,7 +588,7 @@ class Parser {
             pos++
         }
         val buf = buffer.toString()
-        if (needEnd || (
+        if (needEnd && (
                     (buf != platform.expression_end || buf != platform.block_end
                             || !singleComment || !multiComment)
                             && platform.expression_end.isNotBlank())
@@ -619,6 +615,8 @@ class Parser {
             for (error: TangaraError in errors) {
                 println(error)
             }
+        } else {
+            println("PARSING SUCCESFUL")
         }
     }
 }

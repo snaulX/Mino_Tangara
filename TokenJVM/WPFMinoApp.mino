@@ -1,0 +1,22 @@
+import dotnet;
+
+using System;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
+
+class MainWindow() extends Window() {
+
+    public readonly Button button = new Button();
+    private var int counter = 0;
+
+    ctor {
+        this.Title = "Created on Mino with love by snaulX";
+        button.Background = Brushes.Pink;
+        button.Content = "Click me!";
+        button.Click += OnClick;
+        this.AddChild(button);
+    }
+
+    private fun void OnClick(object sender, RoutedEventArgs e) -> MessageBox.Show("Button was clicked " + (++counter).ToString());
+}
