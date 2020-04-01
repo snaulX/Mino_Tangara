@@ -148,6 +148,7 @@ class Parser {
                 isInclude -> {
                     if (lexem.endsWith(exprend)) {
                         tc.include(lexem.removeSuffix(exprend))
+                        tc.insertExprEnd()
                         isInclude = false
                     } else {
                         return false
@@ -156,6 +157,7 @@ class Parser {
                 isUse -> {
                     if (lexem.endsWith(exprend)) {
                         tc.importPackage(lexem.removeSuffix(exprend))
+                        tc.insertExprEnd()
                         isUse = false
                     } else {
                         return false
@@ -164,6 +166,7 @@ class Parser {
                 isLib -> {
                     if (lexem.endsWith(exprend)) {
                         tc.importLibrary(lexem.removeSuffix(exprend))
+                        tc.insertExprEnd()
                         isLib = false
                     } else {
                         return false
@@ -209,7 +212,7 @@ class Parser {
                     }
                 }
                 isTypeAlias -> {
-                    val taName: String = lexem.removeSuffix(exprend)
+                    val taName: String = lexem
                     if (Regex("\\w+").matches(taName))
                         tc.createClass(taName, ClassType.TYPEALIAS, security)
                     else
@@ -219,7 +222,7 @@ class Parser {
                     security = PUBLIC
                 }
                 isFuncAlias -> {
-                    val faName: String = lexem.removeSuffix(exprend)
+                    val faName: String = lexem
                     if (Regex("\\w+").matches(faName))
                         tc.createFunction(faName, "", FuncType.FUNCALIAS, security)
                     else
@@ -274,6 +277,7 @@ class Parser {
                 isPackage -> {
                     if (lexem.endsWith(exprend)) {
                         tc.setPackage(lexem.removeSuffix(exprend))
+                        tc.insertExprEnd()
                         isPackage = false
                     } else {
                         return false
@@ -290,7 +294,7 @@ class Parser {
                 }
                 isCtor -> {
                     var name: String = ""
-                    if (lexem != platform.statement_start || lexem != platform.block_start)
+                    if (lexem != platform.statement_start && lexem != platform.block_start)
                         name = lexem
                     tc.createFunction(name, "", FuncType.CONSTRUCTOR, security)
                     security = PUBLIC
