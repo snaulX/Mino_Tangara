@@ -7,13 +7,13 @@ using System.Windows.Media;
 
 namespace com.snaulX.MinoApps.Wpf;
 
-class MinoApp() extends Application() {
+class MinoApp() : Application() {
     @STAThread
     @Entrypoint
     static fun Main() -> new MinoApp().Run(new MainWindow());
 }
 
-class MainWindow() extends Window() {
+class MainWindow() : Window() {
 
     public readonly Button button = new Button();
     private var int counter = 0;

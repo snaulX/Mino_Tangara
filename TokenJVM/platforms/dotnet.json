@@ -6,8 +6,8 @@
     "block_end": "}",
     "array_start": "[",
     "array_end": "]",
-    "extends_keyword": "extends",
-    "implements_keyword": "implements",
+    "extends_keyword": ":",
+    "implements_keyword": ":",
     "new_operator": "new",
     "readonly_keyword": "readonly",
     "constructor_keyword": "constructor"
