@@ -2,6 +2,7 @@ package com.snaulX.Tangara
 
 import com.snaulX.TokensAPI.*
 import java.io.File
+import kotlin.system.exitProcess
 
 fun main(args: Array<String>) {
     if (args.isEmpty()) {
@@ -90,6 +91,7 @@ fun main(args: Array<String>) {
             parser.code = file.readText()
             parser.parse()
             println("Compilation time: ${System.currentTimeMillis() - start} ms")
+            if (parser.errors.isNotEmpty()) exitProcess(-1)
         }
     }
 }

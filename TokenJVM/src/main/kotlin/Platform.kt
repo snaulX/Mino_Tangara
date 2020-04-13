@@ -105,5 +105,11 @@ data class Platform (
     var null_value: String = "null",
     var false_value: String = "false",
     var true_value: String = "true",
-    var readonly_keyword: String = "val"
+    var readonly_keyword: String = "val",
+    var async_keyword: String = "async",
+    var await_keyword: String = "await",
+    var out_parameter: String = "out",
+    var ref_keyword: String = "ref",
+    var in_parameter: String = "readonly",
+    var params_parameter: String = "params"
 )

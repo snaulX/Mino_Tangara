@@ -92,7 +92,6 @@ class Parser {
         var isOperator: Boolean = false
         var isDirective: Boolean = false
         var isCtor: Boolean = false
-        var replaceKeyword: String = ""
         var needEnd: Boolean = false //check for need of end of expression
         var isNumber: Boolean = false //means that last lexem was number
         var isDouble: Boolean = false //means that have number dot or not
@@ -434,6 +433,11 @@ class Parser {
                                 security = PUBLIC
                             }
                             constructor_keyword -> isCtor = true
+                            async_keyword -> tc.insertAsync(false)
+                            await_keyword -> tc.insertAsync(true)
+                            out_parameter -> tc.parameterType(true)
+                            in_parameter -> tc.parameterType(false)
+                            ref_keyword -> tc.insertRef()
                             else -> tc.callLiteral(lexem)
                         }
                     }
