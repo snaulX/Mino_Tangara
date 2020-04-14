@@ -1,0 +1,14 @@
+{
+    "package_keyword": "namespace",
+    "use_keyword": "using",
+    "expression_end": ";",
+    "block_start": "{",
+    "block_end": "}",
+    "array_start": "[",
+    "array_end": "]",
+    "extends_keyword": ":",
+    "implements_keyword": ":",
+    "new_operator": "new",
+    "readonly_keyword": "readonly",
+    "constructor_keyword": "constructor"
+}

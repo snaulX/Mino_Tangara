@@ -1,0 +1,71 @@
+import std;//importing platform std
+lib standart; //link tokens library standart
+#if DOTNET
+    use System; //using namespace System
+    include mscorlib; //including base library of .NET
+    Console.WriteLine("Hello World"); //printing Hello World on the console
+#endif
+public final class MyClass(internal var string field) {
+    ctor {
+        //body of default constructor
+        print("Field is $field"); //format strings
+    }
+
+    internal virtual fun void askField() {
+        print("Enter field please ");
+        field = inputln();
+    }
+
+    public final fun mySomeReturnMethod() = field; //auto-check return type
+}
+expect typealias string;
+expect funcalias print;
+expect funcalias println;
+expect fun inputln(); //we don`t know it`s function or funcalias
+#if DOTNET
+    actual typealias string = String;
+    actual funcalias print = Console.Write;
+    actual funcalias println = Console.WriteLine;
+    actual funcalias someFunc = Console.ReadLine(); //get only method without arguments
+#if JVM
+    actual typealias string = String;
+    actual funcalias print = System.out.print;
+    actual funcalias println = System.out.println;
+    //actual funcalias inputln = new Scanner(System.in).nextLine; //Error. We can alias only static methods
+    actual fun inputln() => new Scanner.nextLine(); //so good working
+#endif
+private fun string repeat(MyClass repeatable, short count = 5s) {
+    var string ret = "";
+    for (int i in 0..count) ret += repeatable.field;
+    return ret;
+}
+public static var float a = 0.342f;
+if (a is int) print(a); //smart cast
+else a = inputln() to int;
+var string b = "";
+while (b != "Hello World") {
+    print("Input 'Hello World': ");
+    b = inputln();
+}
+import mytest # not error
+/*
+Multiline comment
+is
+work
+*/
+dyalect twoerrors;
+typedef MyTestTypeAlias := MyClass
+variable MyTestTypeAlias c := create MyTestTypeAlias('MyClass')
+some_label:
+    c->askField()
+    switch
+    begin
+        case c -> mySomeReturnMethod() = 'MyClass': raise create Exception('YOUR VARIABLE NAMED MYCLASS')
+        default: runline some_label # goto operator
+    end
+println(c -> field instanceof string) #true
+println(repeat(c, 10s))
+operator int +(MyTestTypeAlias left, MyTestTypeAlias right)
+begin
+    return left -> mySomeReturnMethod() -> length + right -> mySomeReturnMethod() -> length
+end
