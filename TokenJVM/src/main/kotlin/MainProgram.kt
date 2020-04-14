@@ -10,7 +10,7 @@ fun main(args: Array<String>) {
             Tangara 2020-2020
             Author: snaulX
             All copyrights reserved.
-            GitHub repository: https://github.com/snaulX/Tangara
+            GitHub repository: https://github.com/mino-lang/Tangara
             For get commands write -h or --help
         """.trimIndent())
     }

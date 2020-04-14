@@ -111,5 +111,7 @@ data class Platform (
     var out_parameter: String = "out",
     var ref_keyword: String = "ref",
     var in_parameter: String = "readonly",
-    var params_parameter: String = "params"
+    var params_parameter: String = "params",
+    var generic_start: String = "<",
+    var generic_end: String = ">"
 )

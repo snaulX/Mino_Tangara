@@ -1,8 +1,5 @@
 /**
- *TODO("Create parsing of all tokens with if without when")
- *TODO("Create interpolation")
  *TODO("Optimize")
- *TODO("Fix bugs")
  */
 
 package com.snaulX.Tangara
@@ -1046,6 +1043,24 @@ class Parser {
                         tc.callLiteral("try")
                     }
                     tc.insertRef()
+                    if (!repeatLexem)
+                        return
+                }
+                if (lexem == generic_start) {
+                    if (repeatLexem) {
+                        tc.insertDirective()
+                        tc.callLiteral("try")
+                    }
+                    tc.insertGeneric(start = true)
+                    if (!repeatLexem)
+                        return
+                }
+                if (lexem == generic_end) {
+                    if (repeatLexem) {
+                        tc.insertDirective()
+                        tc.callLiteral("try")
+                    }
+                    tc.insertGeneric(start = false)
                     if (!repeatLexem)
                         return
                 }
