@@ -106,6 +106,7 @@ class Parser {
 
         fun checkLexem(lexem: String) {
             val repeatLexem: Boolean = repeatKeywords.contains(lexem)
+            if (lexem == "\n") tc.incLine()
             platform.run {
                 if (lexem == expression_end) {
                     if (repeatLexem) {
@@ -1073,7 +1074,7 @@ class Parser {
 
         /**
          * Push [lexem] to TokensCreator
-         * @return Will can buffer clearing?
+         * @return Will must buffer clearing?
          */
         fun parseLexem(lexem: String): Boolean {
             val exprend = platform.expression_end //for optimizing
@@ -1108,11 +1109,7 @@ class Parser {
                     }
                 }
                 isImport -> {
-                    try {
-                        import(Regex("(\\w+)").find(lexem)!!.destructured.component1())
-                    } catch (e: KotlinNullPointerException) {
-                        errors.add(InvalidNameError(line, "$lexem is not valid platform name"))
-                    }
+                    import(lexem)
                     isImport = false
                     needEnd = true
                 }
@@ -1280,10 +1277,11 @@ class Parser {
                     security = PUBLIC
                 }
                 else -> {
-                    if (!keywords.contains(lexem))
+                    if (!keywords.contains(lexem) && lexem != "\n") {
                         tc.callLiteral(lexem)
-                    else
+                    } else {
                         checkLexem(lexem)
+                    }
                 }
             }
             return true
@@ -1338,58 +1336,71 @@ class Parser {
                     clearBuffer()
                 }
                 isNumber -> {
-                    if (cur.isDigit()) {
-                        buffer.append(cur)
-                    } else if (cur == 'f') {
-                        tc.callValue(buffer.toString().toFloat())
-                        isNumber = false
-                        isDouble = false
-                    } else if (cur == 'd') {
-                        tc.callValue(buffer.toString().toDouble())
-                        isNumber = false
-                        isDouble = false
-                    } else if (cur == 'l') {
-                        if (!isDouble) {
-                            tc.callValue(buffer.toString().toLong())
-                        } else {
-                            errors.add(InvalidNumberError(line, "Number with dot cannot have type short"))
+                    when {
+                        cur.isDigit() -> {
+                            buffer.append(cur)
                         }
-                        isNumber = false
-                    } else if (cur == 's') {
-                        if (!isDouble) {
-                            tc.callValue(buffer.toString().toShort())
-                        } else {
-                            errors.add(InvalidNumberError(line, "Number with dot cannot have type short"))
-                        }
-                        isNumber = false
-                    } else if (cur == 'b') {
-                        if (!isDouble) {
-                            tc.callValue(buffer.toString().toByte())
-                        } else {
-                            errors.add(InvalidNumberError(line, "Number with dot cannot have type byte"))
-                        }
-                        isNumber = false
-                    } else if (cur == '.') {
-                        if (!isDouble) {
-                            isDouble = true
-                        } else {
-                            tc.callValue(buffer.toString().toDouble())
-                            buffer.clear()
-                            if (prev == '.') buffer.append('.')
+                        cur == 'f' -> {
+                            tc.callValue(buffer.toString().toFloat())
                             isNumber = false
                             isDouble = false
                         }
-                        buffer.append('.')
-                    } else {
-                        if (isDouble) {
+                        cur == 'd' -> {
                             tc.callValue(buffer.toString().toDouble())
+                            isNumber = false
                             isDouble = false
-                        } else {
-                            tc.callValue(buffer.toString().toInt())
                         }
-                        isNumber = false
+                        cur == 'l' -> {
+                            if (!isDouble) {
+                                tc.callValue(buffer.toString().toLong())
+                            } else {
+                                errors.add(InvalidNumberError(line, "Number with dot cannot have type short"))
+                            }
+                            isNumber = false
+                        }
+                        cur == 's' -> {
+                            if (!isDouble) {
+                                tc.callValue(buffer.toString().toShort())
+                            } else {
+                                errors.add(InvalidNumberError(line, "Number with dot cannot have type short"))
+                            }
+                            isNumber = false
+                        }
+                        cur == 'b' -> {
+                            if (!isDouble) {
+                                tc.callValue(buffer.toString().toByte())
+                            } else {
+                                errors.add(InvalidNumberError(line, "Number with dot cannot have type byte"))
+                            }
+                            isNumber = false
+                        }
+                        cur == '.' -> {
+                            if (!isDouble) {
+                                isDouble = true
+                            } else {
+                                tc.callValue(buffer.toString().toDouble())
+                                buffer.clear()
+                                if (prev == '.') buffer.append('.')
+                                isNumber = false
+                                isDouble = false
+                            }
+                            buffer.append('.')
+                        }
+                        else -> {
+                            if (isDouble) {
+                                tc.callValue(buffer.toString().toDouble())
+                                isDouble = false
+                            } else {
+                                tc.callValue(buffer.toString().toInt())
+                            }
+                            isNumber = false
+                            buffer.append(cur)
+                            parseLexem(cur.toString())
+                        }
                     }
-                    if (!isNumber) buffer.clear()
+                    if (!isNumber) {
+                        buffer.clear()
+                    }
                 }
                 cur.isWhitespace() -> {
                     clearBuffer()
