@@ -1141,14 +1141,11 @@ class Parser {
                     }
                 }
                 isClass -> {
-                    if (Regex("\\w+").matches(lexem)) {
                         val ct: ClassType? = identifer.classType
                         if (ct == null)
                             errors.add(InvalidNameError(line, "Invalid type of class"))
                         else
                             tc.createClass(lexem, ct, security)
-                    } else
-                        errors.add(InvalidNameError(line, "$lexem is not valid name of class"))
                     identifer = DEFAULT
                     security = PUBLIC
                     isClass = false
@@ -1156,23 +1153,12 @@ class Parser {
                 isFunction -> {
                     if (typeName.isEmpty()) typeName = lexem
                     else {
-                        if (Regex("\\w+").matches(lexem)) {
-                            val ft: FuncType? = identifer.funcType
+                        val ft: FuncType? = identifer.funcType
                             if (ft == null) {
                                 errors.add(InvalidNameError(line, "Invalid type of function"))
                             } else {
                                 tc.createFunction(lexem, typeName, ft, security)
                             }
-                        } else if (typeName.isNotEmpty()) {
-                            val ft: FuncType? = identifer.funcType
-                            if (ft == null) {
-                                errors.add(InvalidNameError(line, "Invalid type of function"))
-                            } else {
-                                tc.createFunction(typeName, "", ft, security)
-                            }
-                        } else {
-                            errors.add(InvalidNameError(line, "$lexem is invalid name of function"))
-                        }
                         identifer = DEFAULT
                         security = PUBLIC
                         isFunction = false
@@ -1181,63 +1167,35 @@ class Parser {
                 }
                 isTypeAlias -> {
                     val taName: String = lexem
-                    if (Regex("\\w+").matches(taName))
-                        tc.createClass(taName, ClassType.TYPEALIAS, security)
-                    else
-                        errors.add(InvalidNameError(line, "$taName is not valid name of typealias"))
+                    tc.createClass(taName, ClassType.TYPEALIAS, security)
                     isTypeAlias = false
                     identifer = DEFAULT
                     security = PUBLIC
                 }
                 isFuncAlias -> {
                     val faName: String = lexem
-                    if (Regex("\\w+").matches(faName))
-                        tc.createFunction(faName, "", FuncType.FUNCALIAS, security)
-                    else
-                        errors.add(InvalidNameError(line, "$faName is not valid name of funcalias"))
+                    tc.createFunction(faName, "", FuncType.FUNCALIAS, security)
                     isFuncAlias = false
                     identifer = DEFAULT
                     security = PUBLIC
                 }
                 isGoto -> {
-                    if (Regex("\\w+").matches(lexem))
-                        tc.goToLabel(lexem)
-                    else
-                        errors.add(
-                            InvalidNameError(
-                                line,
-                                "$lexem is not valid name of label for ${platform.goto_keyword} operator"
-                            )
-                        )
+                    tc.goToLabel(lexem)
                     isGoto = false
                     needEnd = true
                 }
                 isIsOp -> {
-                    if (Regex("\\w+").matches(lexem))
-                        tc.instanceOf(lexem)
-                    else
-                        errors.add(
-                            InvalidNameError(
-                                line,
-                                "$lexem is not valid name of type for ${platform.is_keyword} operator"
-                            )
-                        )
+                    tc.instanceOf(lexem)
                     isIsOp = false
                 }
                 isInterface -> {
-                    if (Regex("\\w+").matches(lexem))
-                        tc.createClass(lexem, ClassType.INTERFACE, security)
-                    else
-                        errors.add(InvalidNameError(line, "$lexem is not valid name of interface"))
+                    tc.createClass(lexem, ClassType.INTERFACE, security)
                     identifer = DEFAULT
                     security = PUBLIC
                     isInterface = false
                 }
                 isStruct -> {
-                    if (Regex("\\w+").matches(lexem))
-                        tc.createClass(lexem, ClassType.STRUCT, security)
-                    else
-                        errors.add(InvalidNameError(line, "$lexem is not valid name of struct"))
+                    tc.createClass(lexem, ClassType.STRUCT, security)
                     identifer = DEFAULT
                     security = PUBLIC
                     isStruct = false
@@ -1269,10 +1227,7 @@ class Parser {
                     isCtor = false
                 }
                 identifer == ENUM && lexem != platform.class_keyword -> {
-                    if (Regex("\\w+").matches(lexem))
-                        tc.createClass(lexem, ClassType.ENUM, security)
-                    else
-                        errors.add(InvalidNameError(line, "$lexem is not valid name of enum"))
+                    tc.createClass(lexem, ClassType.ENUM, security)
                     identifer = DEFAULT
                     security = PUBLIC
                 }
