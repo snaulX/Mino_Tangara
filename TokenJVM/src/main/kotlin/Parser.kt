@@ -1,7 +1,3 @@
-/**
- *TODO("Optimize")
- */
-
 package com.snaulX.Tangara
 
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException
@@ -1291,23 +1287,32 @@ class Parser {
                     clearBuffer()
                 }
                 isNumber -> {
+                    val buf = buffer.toString()
                     when {
                         cur.isDigit() -> {
                             buffer.append(cur)
                         }
                         cur == 'f' -> {
-                            tc.callValue(buffer.toString().toFloat())
+                            try {
+                                tc.callValue(buf.toFloat())
+                            } catch (e: NumberFormatException) {
+                                errors.add(InvalidNumberError(line, "$buf cannot be Float number"))
+                            }
                             isNumber = false
                             isDouble = false
                         }
                         cur == 'd' -> {
-                            tc.callValue(buffer.toString().toDouble())
+                            tc.callValue(buf.toDouble())
                             isNumber = false
                             isDouble = false
                         }
                         cur == 'l' -> {
                             if (!isDouble) {
-                                tc.callValue(buffer.toString().toLong())
+                                try {
+                                    tc.callValue(buf.toLong())
+                                } catch (e: NumberFormatException) {
+                                    errors.add(InvalidNumberError(line, "$buf cannot be Long number"))
+                                }
                             } else {
                                 errors.add(InvalidNumberError(line, "Number with dot cannot have type short"))
                             }
@@ -1315,7 +1320,11 @@ class Parser {
                         }
                         cur == 's' -> {
                             if (!isDouble) {
-                                tc.callValue(buffer.toString().toShort())
+                                try {
+                                    tc.callValue(buf.toShort())
+                                } catch (e: NumberFormatException) {
+                                    errors.add(InvalidNumberError(line, "$buf cannot be Short number"))
+                                }
                             } else {
                                 errors.add(InvalidNumberError(line, "Number with dot cannot have type short"))
                             }
@@ -1323,7 +1332,7 @@ class Parser {
                         }
                         cur == 'b' -> {
                             if (!isDouble) {
-                                tc.callValue(buffer.toString().toByte())
+                                tc.callValue(buf.toByte())
                             } else {
                                 errors.add(InvalidNumberError(line, "Number with dot cannot have type byte"))
                             }
@@ -1333,7 +1342,11 @@ class Parser {
                             if (!isDouble) {
                                 isDouble = true
                             } else {
-                                tc.callValue(buffer.toString().toDouble())
+                                try {
+                                    tc.callValue(buf.toDouble())
+                                } catch (e: NumberFormatException) {
+                                    errors.add(InvalidNumberError(line, "$buf cannot be Double number"))
+                                }
                                 buffer.clear()
                                 if (prev == '.') buffer.append('.')
                                 isNumber = false
@@ -1343,10 +1356,23 @@ class Parser {
                         }
                         else -> {
                             if (isDouble) {
-                                tc.callValue(buffer.toString().toDouble())
+                                try {
+                                    tc.callValue(buf.toDouble())
+                                } catch (e: NumberFormatException) {
+                                    errors.add(InvalidNumberError(line, "$buf cannot be Double number"))
+                                }
                                 isDouble = false
                             } else {
-                                tc.callValue(buffer.toString().toInt())
+                                try {
+                                    tc.callValue(buf.toInt())
+                                } catch (e: NumberFormatException) {
+                                    try {
+                                        tc.callValue(buf.toLong())
+                                    } catch (e: NumberFormatException) {
+                                        errors.add(
+                                            InvalidNumberError(line, "$buf cannot be Long or Int number"))
+                                    }
+                                }
                             }
                             isNumber = false
                             buffer.append(cur)
