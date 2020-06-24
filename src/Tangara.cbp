@@ -40,6 +40,7 @@
 		<Unit filename="HeaderType.h" />
 		<Unit filename="LoopType.h" />
 		<Unit filename="OperatorType.h" />
+		<Unit filename="Platform.h" />
 		<Unit filename="PlatformType.h" />
 		<Unit filename="SecurityDegree.h" />
 		<Unit filename="TokensCreator.h" />

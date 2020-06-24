@@ -1,7 +1,9 @@
 # depslib dependency file v1.0
-1591867985 source:c:\users\user\desktop\snaulx\tangara\src\main.c
+1593016407 source:c:\users\user\desktop\snaulx\tangara\src\main.c
 	<stdio.h>
 	<stdlib.h>
+	<unistd.h>
+	<wchar.h>
 	"TokensCreator.h"
 
 1591800581 c:\users\user\desktop\snaulx\tangara\src\tokenscreator.h
