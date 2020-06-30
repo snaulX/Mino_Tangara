@@ -5,6 +5,7 @@
 #include <locale.h>
 #include "lib/TokensCreator.h"
 #include "parser.h"
+#include "utils/strbuilder.h"
 
 int main(int argc, char* argv[])
 {
@@ -31,9 +32,16 @@ int main(int argc, char* argv[])
         FILE* fprog;
         wint_t wc;
         fprog = fopen(argv[1], "r");
-        while((wc = fgetwc(fprog)) != WEOF){
+        if (fprog == NULL)
+        	error("ProgramNotFound", "File for parsing not found");
+        strbuilder tprog;
+        fseek(fprog, 0, SEEK_END); // seek to end of file
+        create_sb(&tprog, ftell(fprog));
+        fseek(fprog, 0, SEEK_SET); // retutn seek
+        printf("%u", tprog.length);
+        //while((wc = fgetwc(fprog)) != WEOF){
             // work with: "wc"
-        }
+        //}
         fclose(fprog);
     }
     return 0;
