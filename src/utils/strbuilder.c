@@ -12,12 +12,23 @@ void clear(strbuilder* sb)
 	(*sb).length = 0;
 	(*sb).index = 0;
 }
-void cleanprev(strbuilder* sb)
-{
-	//pass
-}
 void append(strbuilder* sb, wchar_t c)
 {
 	(*sb).index++;
 	(*sb).buffer[(*sb).index] = c;
+}
+// Get current char
+wchar_t cur(strbuilder* sb)
+{
+	return (*sb).buffer[(*sb).index];
+}
+// Current char is whatespace
+bool isws(strbuilder* sb)
+{
+	return iswspace(cur(sb));
+}
+// Current char is digit
+bool isdigit(strbuilder* sb)
+{
+	return iswdigit(cur(sb));
 }
