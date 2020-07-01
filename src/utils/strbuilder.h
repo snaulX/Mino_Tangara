@@ -11,6 +11,7 @@ typedef struct {
 
 void create_sb(strbuilder* sb, unsigned int len);
 void clear(strbuilder* sb);
+// Append char
 void append(strbuilder* sb, wchar_t c);
 // Get current char
 wchar_t cur(strbuilder* sb);
@@ -18,3 +19,5 @@ wchar_t cur(strbuilder* sb);
 bool isws(strbuilder* sb);
 // Current char is digit
 bool isdgt(strbuilder* sb);
+// Current char is letter or underscore
+bool isltr(strbuilder* sb);

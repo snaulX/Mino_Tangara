@@ -15,20 +15,26 @@ void clear(strbuilder* sb)
 void append(strbuilder* sb, wchar_t c)
 {
 	(*sb).index++;
-	(*sb).buffer[(*sb).index] = c;
+	if ((*sb).index < (*sb).length) (*sb).buffer[(*sb).index] = c;
+	else
+	{
+		create_sb(sb, (*sb).index++);
+		append(sb, c);
+	}
 }
-// Get current char
 wchar_t cur(strbuilder* sb)
 {
 	return (*sb).buffer[(*sb).index];
 }
-// Current char is whatespace
 bool isws(strbuilder* sb)
 {
 	return iswspace(cur(sb));
 }
-// Current char is digit
 bool isdgt(strbuilder* sb)
 {
 	return iswdigit(cur(sb));
+}
+bool isltr(strbuilder* sb)
+{
+	return iswalpha(cur(sb)) || cur(sb) == '_';
 }

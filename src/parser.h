@@ -5,9 +5,10 @@
 char* appname;
 PlatformType target;
 HeaderType header;
-unsigned int line;
 strbuilder code;
 
 void error(const char* type, const char* message);
-void lexerize();
+void reparse_platform();
+void import(char* name);
+strbuilder lexerize();
 int parse();
