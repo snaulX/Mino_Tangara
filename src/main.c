@@ -4,6 +4,7 @@
 #include <wchar.h>
 #include <locale.h>
 #include "parser.h"
+#include "utils\utils.h"
 
 int main(int argc, char* argv[])
 {
@@ -36,14 +37,13 @@ int main(int argc, char* argv[])
         fseek(fprog, 0, SEEK_END); // seek to end of file
         create_sb(&code, ftell(fprog));
         fseek(fprog, 0, SEEK_SET); // retutn seek
-        printf("%u\n", code.length);
         while((wc = fgetwc(fprog)) != WEOF){
             append(&code, wc);
         }
         fclose(fprog);
         target = Common;
         header = Script;
-        appname = argv[1];
+        appname = removeext(argv[1]);
         return parse();
     }
 }

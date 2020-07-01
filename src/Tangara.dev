@@ -29,7 +29,7 @@ IncludeVersionInfo=1
 SupportXPThemes=0
 CompilerSet=1
 CompilerSettings=0000000000000000001000000
-UnitCount=16
+UnitCount=18
 
 [VersionInfo]
 Major=1
@@ -202,6 +202,26 @@ BuildCmd=
 
 [Unit16]
 FileName=parser.h
+CompileCpp=0
+Folder=
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit17]
+FileName=utils\utils.h
+CompileCpp=0
+Folder=
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit18]
+FileName=utils\utils.c
 CompileCpp=0
 Folder=
 Compile=1

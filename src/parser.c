@@ -21,8 +21,12 @@ int parse()
 	set_output(appname, ".tokens");
 	set_platform(target);
 	set_header(header);
+	lexerize();
 	if (errors_count > 0)
 		return -1;
 	else
+	{
+		printf("PARSING SUCCESFUL\n");
 		return 0;
+	}
 }

@@ -28,7 +28,7 @@ bool isws(strbuilder* sb)
 	return iswspace(cur(sb));
 }
 // Current char is digit
-bool isdigit(strbuilder* sb)
+bool isdgt(strbuilder* sb)
 {
 	return iswdigit(cur(sb));
 }

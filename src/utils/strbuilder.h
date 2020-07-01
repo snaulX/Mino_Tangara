@@ -17,4 +17,4 @@ wchar_t cur(strbuilder* sb);
 // Current char is whatespace
 bool isws(strbuilder* sb);
 // Current char is digit
-bool isdigit(strbuilder* sb);
+bool isdgt(strbuilder* sb);
