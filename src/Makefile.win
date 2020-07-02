@@ -5,8 +5,8 @@ CPP      = g++.exe -D__DEBUG__
 CC       = gcc.exe -D__DEBUG__
 WINDRES  = windres.exe
 RES      = obj/Tangara_private.res
-OBJ      = obj/main.o obj/parser.o obj/strbuilder.o obj/TokensCreator.o obj/utils.o $(RES)
-LINKOBJ  = obj/main.o obj/parser.o obj/strbuilder.o obj/TokensCreator.o obj/utils.o $(RES)
+OBJ      = obj/main.o obj/parser.o obj/strbuilder.o obj/TokensCreator.o obj/utils.o obj/strlist.o obj/lexer.o $(RES)
+LINKOBJ  = obj/main.o obj/parser.o obj/strbuilder.o obj/TokensCreator.o obj/utils.o obj/strlist.o obj/lexer.o $(RES)
 LIBS     = -L"C:/Program Files (x86)/Dev-Cpp/MinGW64/lib" -L"C:/Program Files (x86)/Dev-Cpp/MinGW64/x86_64-w64-mingw32/lib" -static-libgcc -g3
 INCS     = -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/x86_64-w64-mingw32/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include"
 CXXINCS  = -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/x86_64-w64-mingw32/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include/c++"
@@ -39,6 +39,12 @@ obj/TokensCreator.o: lib/TokensCreator.c
 
 obj/utils.o: utils/utils.c
 	$(CC) -c utils/utils.c -o obj/utils.o $(CFLAGS)
+
+obj/strlist.o: utils/strlist.c
+	$(CC) -c utils/strlist.c -o obj/strlist.o $(CFLAGS)
+
+obj/lexer.o: lexer.c
+	$(CC) -c lexer.c -o obj/lexer.o $(CFLAGS)
 
 obj/Tangara_private.res: Tangara_private.rc 
 	$(WINDRES) -i Tangara_private.rc --input-format=rc -o obj/Tangara_private.res -O coff 

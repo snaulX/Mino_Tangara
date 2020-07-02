@@ -37,7 +37,8 @@ int main(int argc, char* argv[])
         fseek(fprog, 0, SEEK_END); // seek to end of file
         create_sb(&code, ftell(fprog));
         fseek(fprog, 0, SEEK_SET); // retutn seek
-        while((wc = fgetwc(fprog)) != WEOF){
+        while((wc = fgetwc(fprog)) != WEOF) 
+		{
             append(&code, wc);
         }
         fclose(fprog);
