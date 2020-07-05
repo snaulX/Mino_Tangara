@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "utils\strlist.h"
+#include "Platform.h"
 #include "lib\TokensCreator.h"
 
 char* appname;

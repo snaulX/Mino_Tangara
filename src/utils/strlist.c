@@ -32,7 +32,7 @@ void addsb(strlist* l, strbuilder sb)
 		int i;
 		for (i = 0; i < sizeof(old)/sizeof(strbuilder); i++)
 			addsb(l, old[i]);
-		add(l, sb);
+		addsb(l, sb);
 	}
 }
 void lclear(strlist* l)
@@ -43,7 +43,7 @@ void lclear(strlist* l)
 }
 void lremove(strlist* l)
 {
-	free(&(*l).strs[(*l).index]);
+	free(lcurptr(l));
 	(*l).index--;
 	(*l).length--;
 }

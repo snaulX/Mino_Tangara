@@ -4,8 +4,7 @@ char* appname;
 Platform platform;
 PlatformType target;
 HeaderType header;
-unsigned int errors_count;
-unsigned int line;
+unsigned int errors_count, line, isnumb;
 strbuilder code;
 strlist lexemes, strings, numbers;
 bool isstring = false;
@@ -38,7 +37,14 @@ void lexerize(strbuilder prog)
 				clear(&lexem);
 			}
 			else
-				
+			{
+				append(&lexem, cur(&code));
+			}	
+		}
+		else if (isnumb)
+		{
+			if (isdgt(&code))
+				append(&lexem, cur(&code));
 		}
 		else 
 		{
@@ -52,7 +58,8 @@ void lexerize(strbuilder prog)
 			}
 			else if (isdgt(&code))
 			{
-				//pass
+				append(&lexem, cur(&code));
+				isnumb = true;
 			}
 			else if (isltr(&code))
 			{
@@ -74,10 +81,11 @@ int parse()
 	create_list(&lexemes);
 	create_list(&strings);
 	create_list(&numbers);
+	platform = new_platform();
 	lexerize(code);
-	clear(&lexemes);
-	clear(&strings);
-	clear(&numbers);
+	lclear(&lexemes);
+	lclear(&strings);
+	lclear(&numbers);
 	if (errors_count > 0)
 		return -1;
 	else
