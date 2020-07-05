@@ -9,7 +9,8 @@ typedef struct {
 	unsigned int index;
 } strbuilder;
 
-void create_sb(strbuilder* sb, unsigned int len);
+void create_sb(strbuilder* sb);
+void create_lensb(strbuilder* sb, unsigned int len);
 void clear(strbuilder* sb);
 // Append char
 void append(strbuilder* sb, wchar_t c);

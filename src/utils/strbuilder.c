@@ -1,6 +1,10 @@
 #include "strbuilder.h"
 
-void create_sb(strbuilder* sb, unsigned int len)
+void create_sb(strbuilder* sb)
+{
+	//pass
+}
+void create_lensb(strbuilder* sb, unsigned int len)
 {
 	(*sb).buffer = (wchar_t*)calloc(len, sizeof(wchar_t));
 	(*sb).length = len;
@@ -18,7 +22,11 @@ void append(strbuilder* sb, wchar_t c)
 	if ((*sb).index < (*sb).length) (*sb).buffer[(*sb).index] = c;
 	else
 	{
-		create_sb(sb, (*sb).index++);
+		wchar_t* old = (*sb).buffer;
+		create_lensb(sb, ++(*sb).index);
+		int i;
+		for (i = 0; i < sizeof(old)/sizeof(wchar_t); i++)
+			append(sb, old[i]);
 		append(sb, c);
 	}
 }

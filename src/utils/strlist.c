@@ -10,46 +10,29 @@ void create_lenlist(strlist* list, unsigned int len)
 	int i;
 	for (i = 0; i < len; i++)
 	{
-		create_sb(&(*list).strs[i], 0);
+		create_sb(&(*list).strs[i]);
 	}
 	(*list).length = len;
 }
 void add(strlist* l, wchar_t* s)
 {
 	strbuilder str;
-	create_sb(&str, sizeof(s) / sizeof(wchar_t));
+	create_lensb(&str, sizeof(s) / sizeof(wchar_t));
 	str.buffer = s;
 	addsb(l, str);
 }
 void addsb(strlist* l, strbuilder sb)
 {
-	int ind = (*l).index;
-	if (ind >= (*l).length)
-	{
-		strbuilder* last;
-		last = (*l).strs;
-		free((*l).strs);
-		if ((*l).index > (*l).length)
-		{
-			(*l).strs = calloc(ind, sizeof(strbuilder) * ind);
-			(*l).length = ind;
-		}
-		else
-		{	
-			(*l).strs = calloc(ind + 1, sizeof(strbuilder) * (ind + 1));
-			(*l).length = ind + 1;
-		}
-		int i;
-		ind = (*l).length;
-		for (i = 0; i < ind; i++)
-		{
-			(*l).strs[i] = last[i];
-		}
-		(*l).strs[ind - 1] = sb;
-	}
+	(*l).index++;
+	if ((*l).index < (*l).length) (*l).strs[(*l).index] = sb;
 	else
 	{
-		(*l).strs[ind] = sb;
+		strbuilder* old = (*l).strs;
+		create_lenlist(l, ++(*l).index);
+		int i;
+		for (i = 0; i < sizeof(old)/sizeof(strbuilder); i++)
+			addsb(l, old[i]);
+		add(l, sb);
 	}
 }
 void lclear(strlist* l)

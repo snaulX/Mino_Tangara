@@ -34,9 +34,7 @@ int main(int argc, char* argv[])
         fprog = fopen(argv[1], "r");
         if (fprog == NULL)
         	error("ProgramNotFound", "File for parsing not found");
-        fseek(fprog, 0, SEEK_END); // seek to end of file
-        create_sb(&code, ftell(fprog));
-        fseek(fprog, 0, SEEK_SET); // retutn seek
+        create_sb(&code);
         while((wc = fgetwc(fprog)) != WEOF) 
 		{
             append(&code, wc);
