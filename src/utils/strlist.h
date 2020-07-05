@@ -4,7 +4,7 @@
 #include "strbuilder.h"
 
 typedef struct {
-	wchar_t* strs;
+	strbuilder* strs;
 	unsigned int index;
 	unsigned int length;
 } strlist;
@@ -15,4 +15,5 @@ void add(strlist* l, wchar_t* s);
 void addsb(strlist* l, strbuilder sb);
 void lclear(strlist* l);
 void lremove(strlist* l);
-wchar_t* lcur(strlist* l);
+strbuilder lcur(strlist* l);
+strbuilder* lcurptr(strlist* l);

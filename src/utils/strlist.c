@@ -6,16 +6,51 @@ void create_list(strlist* list)
 }
 void create_lenlist(strlist* list, unsigned int len)
 {
-	(*list).strs = (wchar_t*)malloc(len * sizeof(wchar_t));
+	(*list).strs = (strbuilder*) calloc(len, sizeof(strbuilder));
+	int i;
+	for (i = 0; i < len; i++)
+	{
+		create_sb(&(*list).strs[i], 0);
+	}
 	(*list).length = len;
 }
 void add(strlist* l, wchar_t* s)
 {
-	//pass
+	strbuilder str;
+	create_sb(&str, sizeof(s) / sizeof(wchar_t));
+	str.buffer = s;
+	addsb(l, str);
 }
 void addsb(strlist* l, strbuilder sb)
 {
-	//pass
+	int ind = (*l).index;
+	if (ind >= (*l).length)
+	{
+		strbuilder* last;
+		last = (*l).strs;
+		free((*l).strs);
+		if ((*l).index > (*l).length)
+		{
+			(*l).strs = calloc(ind, sizeof(strbuilder) * ind);
+			(*l).length = ind;
+		}
+		else
+		{	
+			(*l).strs = calloc(ind + 1, sizeof(strbuilder) * (ind + 1));
+			(*l).length = ind + 1;
+		}
+		int i;
+		ind = (*l).length;
+		for (i = 0; i < ind; i++)
+		{
+			(*l).strs[i] = last[i];
+		}
+		(*l).strs[ind - 1] = sb;
+	}
+	else
+	{
+		(*l).strs[ind] = sb;
+	}
 }
 void lclear(strlist* l)
 {
@@ -25,11 +60,15 @@ void lclear(strlist* l)
 }
 void lremove(strlist* l)
 {
-	free((*l).strs[(*l).index]);
+	free(&(*l).strs[(*l).index]);
 	(*l).index--;
 	(*l).length--;
 }
-wchar_t* lcur(strlist* l)
+strbuilder lcur(strlist* l)
 {
-	//pass
+	return (*l).strs[(*l).index];
+}
+strbuilder* lcurptr(strlist* l)
+{
+	return &(*l).strs[(*l).index];
 }

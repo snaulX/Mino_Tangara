@@ -6,6 +6,8 @@ HeaderType header;
 unsigned int errors_count;
 unsigned int line;
 strbuilder code;
+strlist lexemes;
+bool isstring = false;
 
 void error(const char* type, const char* message)
 {
@@ -20,16 +22,41 @@ void import(char* name)
 {
 	//pass
 }
-void parse_lexemes(strlist lexemes)
+void lexerize(strbuilder prog)
 {
-	//pass
+	strbuilder lexem;
+	create_sb(&lexem, 0);
+	reparse_platform();
+	while (code.index < code.length)
+	{
+		if (isws(&code))
+		{
+			//pass
+		}
+		else if (isdgt(&code))
+		{
+			//pass
+		}
+		else if (isltr(&code))
+		{
+			//pass
+		}
+		else
+		{
+			//pass
+		}
+		code.index++;
+	}
+	clear(&lexem);
 }
 int parse()
 {
 	set_output(appname, ".tokens");
 	set_platform(target);
 	set_header(header);
-	parse_lexemes(lexerize(code));
+	create_list(&lexemes);
+	lexerize(code);
+	clear(&lexemes);
 	if (errors_count > 0)
 		return -1;
 	else
