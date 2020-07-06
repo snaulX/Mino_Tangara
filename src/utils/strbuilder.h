@@ -16,9 +16,13 @@ void clear(strbuilder* sb);
 void append(strbuilder* sb, wchar_t c);
 // Get current char
 wchar_t cur(strbuilder* sb);
+// Get pointer on current char
+wchar_t* curptr(strbuilder* sb);
 // Current char is whatespace
 bool isws(strbuilder* sb);
 // Current char is digit
 bool isdgt(strbuilder* sb);
 // Current char is letter or underscore
 bool isltr(strbuilder* sb);
+// Remove char in sb with current index
+void sbremove(strbuilder* sb);

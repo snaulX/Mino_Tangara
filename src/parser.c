@@ -29,22 +29,47 @@ void lexerize(strbuilder prog)
 	reparse_platform();
 	for (code.index = 0; code.index < code.length; code.index++)
 	{
+		wchar_t cc = cur(&code);
 		if (isstring)
 		{
-			if (cur(&code) == platform.tokens[string_char])
+			if (cc == platform.tokens[string_char])
 			{
 				addsb(&strings, lexem);
 				clear(&lexem);
 			}
 			else
 			{
-				append(&lexem, cur(&code));
+				append(&lexem, cc);
 			}	
 		}
 		else if (isnumb)
 		{
 			if (isdgt(&code))
-				append(&lexem, cur(&code));
+				append(&lexem, cc);
+			else if (cc == '.')
+			{
+				if (isnumb == 1)
+				{
+					if (cur(&lexem) == '.')
+					{
+						sbremove(&lexem);
+						addsb(&numbers, lexem);
+						clear(&lexem);
+						append(&lexem, '.');
+					}
+					else
+					{
+						addsb(&numbers, lexem);
+						clear(&lexem);
+					}
+					append(&lexem, '.');
+					isnumb = false;
+				}
+				else
+				{
+					isnumb = 1;
+				}
+			}
 		}
 		else 
 		{
@@ -58,12 +83,12 @@ void lexerize(strbuilder prog)
 			}
 			else if (isdgt(&code))
 			{
-				append(&lexem, cur(&code));
+				append(&lexem, cc);
 				isnumb = true;
 			}
 			else if (isltr(&code))
 			{
-				append(&lexem, cur(&code));
+				append(&lexem, cc);
 			}
 			else
 			{
