@@ -6,7 +6,7 @@ PlatformType target;
 HeaderType header;
 unsigned int errors_count, line, isnumb;
 strbuilder code;
-strlist lexemes, strings, numbers;
+strlist lexemes, strings;
 bool isstring = false;
 
 void error(const char* type, const char* message)
@@ -34,8 +34,9 @@ void lexerize(strbuilder prog)
 		{
 			if (cc == platform.tokens[string_char])
 			{
-				addsb(&strings, lexem);
+				addsb(&strings, lexem); //call_string(lexem.buffer);
 				clear(&lexem);
+				isstring = false;
 			}
 			else
 			{
@@ -53,13 +54,13 @@ void lexerize(strbuilder prog)
 					if (cur(&lexem) == '.')
 					{
 						sbremove(&lexem);
-						addsb(&numbers, lexem);
+						call_double(wcstod(lexem.buffer, NULL));
 						clear(&lexem);
 						append(&lexem, '.');
 					}
 					else
 					{
-						addsb(&numbers, lexem);
+						call_double(wcstod(lexem.buffer, NULL));
 						clear(&lexem);
 					}
 					append(&lexem, '.');
@@ -109,6 +110,12 @@ void lexerize(strbuilder prog)
 				call_double(wcstod(lexem.buffer, NULL));
 				clear(&lexem);
 			}
+			else
+			{
+				call_int((short)wcstol(lexem.buffer, NULL, 10));
+				clear(&lexem);
+				append(&lexem, cc);
+			}
 		}
 		else 
 		{
@@ -121,7 +128,8 @@ void lexerize(strbuilder prog)
 				}
 			}
 			else if (isdgt(&code))
-			{
+			{ 
+				// TODO: Fix bug when literal gh232j will parse wrong
 				append(&lexem, cc);
 				isnumb = true;
 			}
@@ -144,17 +152,11 @@ int parse()
 	set_header(header);
 	create_list(&lexemes);
 	create_list(&strings);
-	create_list(&numbers);
 	platform = new_platform();
 	lexerize(code);
 	lclear(&lexemes);
 	lclear(&strings);
-	lclear(&numbers);
-	if (errors_count > 0)
-		return -1;
-	else
-	{
+	if (errors_count == 0)
 		printf("PARSING SUCCESFUL\n");
-		return 0;
-	}
+	return errors_count;
 }

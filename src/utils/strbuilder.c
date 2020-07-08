@@ -2,7 +2,7 @@
 
 void create_sb(strbuilder* sb)
 {
-	//pass
+	create_lensb(sb, 0);
 }
 void create_lensb(strbuilder* sb, unsigned int len)
 {

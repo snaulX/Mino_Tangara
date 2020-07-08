@@ -2,7 +2,7 @@
 
 void create_list(strlist* list)
 {
-	//pass
+	create_lenlist(list, 0);
 }
 void create_lenlist(strlist* list, unsigned int len)
 {
