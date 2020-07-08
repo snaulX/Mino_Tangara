@@ -48,7 +48,7 @@ void lexerize(strbuilder prog)
 				append(&lexem, cc);
 			else if (cc == '.')
 			{
-				if (isnumb == 1)
+				if (isnumb == 1) // number had dot?
 				{
 					if (cur(&lexem) == '.')
 					{
@@ -69,6 +69,45 @@ void lexerize(strbuilder prog)
 				{
 					isnumb = 1;
 				}
+			}
+			else if (cc == 'b')
+			{
+				//byte
+				if (isnumb == 1)
+					error("NumberFormat", "Byte number can`t have dot");
+				else
+					call_byte((char)wcstol(lexem.buffer, NULL, 10));
+				clear(&lexem);
+			}
+			else if (cc == 's')
+			{
+				//short
+				if (isnumb == 1)
+					error("NumberFormat", "Short number can`t have dot");
+				else
+					call_short((short)wcstol(lexem.buffer, NULL, 10));
+				clear(&lexem);
+			}
+			else if (cc == 'l')
+			{
+				//long
+				if (isnumb == 1)
+					error("NumberFormat", "Long number can`t have dot");
+				else
+					call_long(wcstol(lexem.buffer, NULL, 10));
+				clear(&lexem);
+			}
+			else if (cc == 'f')
+			{
+				//float
+				call_float((float)wcstod(lexem.buffer, NULL));
+				clear(&lexem);
+			}
+			else if (cc == 'd')
+			{
+				//double
+				call_double(wcstod(lexem.buffer, NULL));
+				clear(&lexem);
 			}
 		}
 		else 
