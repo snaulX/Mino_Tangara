@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
+#include <wchar.h>
 #include "HeaderType.h"
 #include "PlatformType.h"
 #include "ClassType.h"
@@ -14,6 +15,7 @@
 void set_output(char* app_name, char* extension);
 void end_work();
 void writestr(const char* str);
+void writewstr(wchar_t* str);
 
 // Create Header
 void set_header(HeaderType h);
@@ -44,7 +46,7 @@ void call_short(short v);
 void call_float(float v);
 void call_long(long v);
 void call_double(double v);
-void call_string(const char* v);
+void call_string(wchar_t* v);
 void call_bool(bool v);
 // End of values
 void insert_nullable();

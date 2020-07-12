@@ -23,6 +23,17 @@ void writestr(const char* str)
 	}
 }
 
+void writewstr(wchar_t* str)
+{
+	size_t l = wcslen(str);
+	putc(l, output);
+	int i;
+	for (i = 0; i < l; i++)
+	{
+		putwc(str[i], output);
+	}
+}
+
 void set_header(HeaderType h)
 {
 	putc(h, output);
@@ -153,10 +164,10 @@ void call_double(double v)
 	putc(21, output);
 	putc(v, output);
 }
-void call_string(const char* v)
+void call_string(wchar_t* v)
 {
 	putc(22, output);
-	writestr(v);
+	writewstr(v);
 }
 void call_bool(bool v)
 {

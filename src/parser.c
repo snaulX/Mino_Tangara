@@ -4,7 +4,8 @@ char* appname;
 Platform platform;
 PlatformType target;
 HeaderType header;
-unsigned int errors_count, line, isnumb;
+unsigned int errors_count, line;
+char isnumb; // can have so small values
 strbuilder code;
 strlist lexemes, strings;
 bool isstring = false;
@@ -29,12 +30,14 @@ void lexerize(strbuilder prog)
 	reparse_platform();
 	for (code.index = 0; code.index < code.length; code.index++)
 	{
-		wchar_t cc = cur(&code);
+		// TODO: Must collect chars for string end becouse
+		// platform.tokens[string_char] can have a lot of chars (not one) 
+		wchar_t cc = cur(&code); 
 		if (isstring)
 		{
 			if (cc == platform.tokens[string_char])
 			{
-				addsb(&strings, lexem); //call_string(lexem.buffer);
+				call_string(lexem.buffer);
 				clear(&lexem);
 				isstring = false;
 			}
