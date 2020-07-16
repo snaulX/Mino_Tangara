@@ -114,7 +114,7 @@
 #define generic_end 111
 
 typedef struct {
-    wchar_t* tokens[112];
+    wchar_t* tokens[113];
 } Platform;
 
 Platform new_platform()

@@ -1,5 +1,7 @@
 #include "parser.h"
 
+#define putlexem() { addsb(&lexemes, lexem); clear(&lexem); }
+
 char* appname;
 Platform platform;
 PlatformType target;
@@ -8,7 +10,7 @@ unsigned int errors_count, line;
 char isnumb; // can have so small values
 strbuilder code;
 strlist lexemes, strings;
-bool isstring = false;
+bool isstring = false, isliteral = false;
 
 void error(const char* type, const char* message)
 {
@@ -42,9 +44,7 @@ void lexerize(strbuilder prog)
 				isstring = false;
 			}
 			else
-			{
-				append(&lexem, cc);
-			}	
+				append(&lexem, cc);	
 		}
 		else if (isnumb)
 		{
@@ -70,9 +70,7 @@ void lexerize(strbuilder prog)
 					isnumb = false;
 				}
 				else
-				{
 					isnumb = 1;
-				}
 			}
 			else if (cc == 'b')
 			{
@@ -120,15 +118,26 @@ void lexerize(strbuilder prog)
 				append(&lexem, cc);
 			}
 		}
+		else if (isliteral)
+		{
+			if (isltr(&code) || isdgt(&code))
+				append(&lexem, cc);
+			else
+			{
+				isliteral = false;
+				putlexem();
+				if (!isws(&code)) //is punctuation
+				{
+					append(&lexem, cc);
+				}
+			}
+		}
 		else 
 		{
 			if (isws(&code))
 			{
 				if (!isws(&lexem)) // if char before current whitespace was not whitespace
-				{
-					addsb(&lexemes, lexem);
-					clear(&lexem);
-				}
+					putlexem();
 			}
 			else if (isdgt(&code))
 			{ 
@@ -138,6 +147,7 @@ void lexerize(strbuilder prog)
 			}
 			else if (isltr(&code))
 			{
+				isliteral = true;
 				append(&lexem, cc);
 			}
 			else
