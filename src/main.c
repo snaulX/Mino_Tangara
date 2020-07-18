@@ -4,7 +4,7 @@
 #include <wchar.h>
 #include <locale.h>
 #include "parser.h"
-#include "utils\utils.h"
+#include "utils/utils.h"
 
 int main(int argc, char* argv[])
 {
@@ -29,17 +29,7 @@ int main(int argc, char* argv[])
             }
         }*/
         setlocale(LC_ALL, NULL);
-        FILE* fprog;
-        wint_t wc;
-        fprog = fopen(argv[1], "r");
-        if (fprog == NULL)
-        	error("ProgramNotFound", "File for parsing not found");
-        create_sb(&code);
-        while((wc = fgetwc(fprog)) != WEOF) 
-		{
-            append(&code, wc);
-        }
-        fclose(fprog);
+        code = readfile(argv[1]);
         target = Common;
         header = Script;
         appname = removeext(argv[1]);

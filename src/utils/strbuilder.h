@@ -14,6 +14,8 @@ void create_lensb(strbuilder* sb, unsigned int len);
 void clear(strbuilder* sb);
 // Append char
 void append(strbuilder* sb, wchar_t c);
+// Append string
+void appendstr(strbuilder* sb, wchar_t* str);
 // Get current char
 wchar_t cur(strbuilder* sb);
 // Get pointer on current char

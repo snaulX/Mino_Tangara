@@ -17,14 +17,6 @@ void error(const char* type, const char* message)
 	printf("%sError in line %u. %s.\n", type, line, message);
 	errors_count++;
 }
-void reparse_platform()
-{
-	//pass
-}
-void import(char* name)
-{
-	//pass
-}
 void lexerize(strbuilder prog)
 {
 	strbuilder lexem;
@@ -125,7 +117,7 @@ void lexerize(strbuilder prog)
 			else
 			{
 				isliteral = false;
-				putlexem();
+				putlexem()
 				if (!isws(&code)) //is punctuation
 				{
 					append(&lexem, cc);
@@ -137,11 +129,10 @@ void lexerize(strbuilder prog)
 			if (isws(&code))
 			{
 				if (!isws(&lexem)) // if char before current whitespace was not whitespace
-					putlexem();
+					putlexem()
 			}
 			else if (isdgt(&code))
-			{ 
-				// TODO: Fix bug when literal gh232j will parse wrong
+			{
 				append(&lexem, cc);
 				isnumb = true;
 			}

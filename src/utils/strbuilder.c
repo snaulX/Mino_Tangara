@@ -30,6 +30,14 @@ void append(strbuilder* sb, wchar_t c)
 		append(sb, c);
 	}
 }
+void appendstr(strbuilder* sb, wchar_t* str)
+{
+	int i;
+	for (i = 0; i < sizeof(str) / sizeof(wchar_t); i++)
+	{
+		append(sb, str[i]);
+	}
+}
 wchar_t cur(strbuilder* sb)
 {
 	return sb->buffer[sb->index];

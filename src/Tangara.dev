@@ -29,7 +29,7 @@ IncludeVersionInfo=1
 SupportXPThemes=0
 CompilerSet=1
 CompilerSettings=0000000000000000001000000
-UnitCount=20
+UnitCount=24
 
 [VersionInfo]
 Major=1
@@ -251,7 +251,37 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit22]
-FileName=lexer.h
+FileName=lib\cJSON.h
+CompileCpp=0
+Folder=
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit21]
+FileName=lib\cJSON.c
+CompileCpp=0
+Folder=
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit23]
+FileName=lib\cJSON_Utils.c
+CompileCpp=0
+Folder=
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit24]
+FileName=lib\cJSON_Utils.h
 CompileCpp=0
 Folder=
 Compile=1

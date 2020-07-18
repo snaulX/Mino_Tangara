@@ -1,5 +1,8 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <wchar.h>
+#include "lib/cJSON.h"
+
 #define import_keyword 0
 #define use_keyword 1
 #define lib_keyword 2
@@ -116,6 +119,8 @@
 typedef struct {
     wchar_t* tokens[113];
 } Platform;
+
+strlist puncts; // punctuation keywords
 
 Platform new_platform()
 {
@@ -235,4 +240,17 @@ Platform new_platform()
     	L">"
 	} };
 	return pl;
+}
+
+void reparse_platform()
+{
+	//pass
+}
+
+void import(char* name)
+{
+	//wchar_t* fpl = readfile(strcat(name, ".json"))->buffer;
+	//char * vOut = new char[wcslen(fpl)+1];
+	//wcstombs_s(NULL, vOut, wcslen(fpl)+1,vIn, wcslen(fpl)+1);	
+	//cJSON* json = cJSON_Parse(vOut);
 }
