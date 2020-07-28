@@ -4,7 +4,6 @@
 #include <wchar.h>
 #include <locale.h>
 #include "parser.h"
-#include "utils/utils.h"
 
 int main(int argc, char* argv[])
 {

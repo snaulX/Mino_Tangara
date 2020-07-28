@@ -11,7 +11,7 @@ char* removeext(char* fn)
 	}
 	return fnwoext;
 }
-strbuilder* readfile(char* name)
+strbuilder readfile(char* name)
 {
 	FILE* f;
     wint_t wc;
@@ -25,5 +25,5 @@ strbuilder* readfile(char* name)
         append(out, wc);
     }
     fclose(f);
-    return out;
+    return *out;
 }

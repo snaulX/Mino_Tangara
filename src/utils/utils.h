@@ -3,4 +3,4 @@
 #include <wchar.h>
 
 char* removeext(char* fn);
-strbuilder* readfile(char* name);
+strbuilder readfile(char* name);

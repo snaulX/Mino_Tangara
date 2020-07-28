@@ -1,7 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <wchar.h>
+#include <string.h>
 #include "lib/cJSON.h"
+#include "utils/strlist.h"
+#include "utils/utils.h"
 
 #define import_keyword 0
 #define use_keyword 1
@@ -122,135 +125,8 @@ typedef struct {
 
 strlist puncts; // punctuation keywords
 
-Platform new_platform()
-{
-	Platform pl = { {
-    	L"import",
-    	L"use",
-    	L"lib",
-    	L"class",
-    	L"public",
-    	L"private",
-    	L"protected",
-    	L"internal",
-    	L"final",
-    	L"abstract",
-    	L"data",
-    	L"static",
-    	L"virtual",
-    	L"expect",
-    	L"actual",
-    	L"fun",
-    	L"ctor",
-    	L"funcalias",
-    	L"typealias",
-    	L"var",
-    	L"try",
-    	L"catch",
-    	L"finally",
-    	L"if",
-    	L"else",
-    	L"",
-    	L"while",
-    	L"do",
-    	L"for",
-    	L"for",
-    	L"const",
-    	L"enum",
-    	L"delegate",
-    	L"interface",
-    	L"operator",
-    	L"struct",
-    	L"@",
-    	L"[",
-    	L"]",
-    	L"(",
-    	L")",
-    	L"{",
-    	L"}",
-    	L"\"",
-    	L"'",
-    	L"#",
-    	L"//",
-    	L"/*",
-    	L"*/",
-    	L"typeof",
-    	L"is",
-    	L"with",
-    	L"switch",
-    	L"case",
-    	L"default",
-    	L"break",
-    	L"continue",
-    	L"return",
-    	L"yield",
-    	L"include",
-    	L"annotation",
-    	L"collection",
-    	L"override",
-    	L":",
-    	L":",
-    	L";",
-    	L".",
-    	L",",
-    	L"?",
-    	L"+",
-    	L"-",
-    	L"*",
-    	L"/",
-    	L"%",
-    	L"^",
-    	L"++",
-    	L"--",
-    	L"=",
-    	L"==",
-    	L"<",
-    	L">",
-    	L"+=",
-    	L"-=",
-    	L"*=",
-    	L"/=",
-    	L"%=",
-    	L">=",
-    	L"<=",
-    	L"..",
-    	L"!",
-    	L"!=",
-    	L"breakpoint",
-    	L"new",
-    	L"throw",
-    	L"goto",
-    	L"in",
-    	L"to",
-    	L"package",
-    	L"=>",
-    	L"->",
-    	L":",
-    	L"null",
-    	L"false",
-    	L"true",
-    	L"val",
-    	L"async",
-    	L"await",
-    	L"out",
-    	L"ref",
-    	L"readonly",
-    	L"params",
-    	L"<",
-    	L">"
-	} };
-	return pl;
-}
+Platform new_platform();
 
-void reparse_platform()
-{
-	//pass
-}
+void reparse_platform();
 
-void import(char* name)
-{
-	//wchar_t* fpl = readfile(strcat(name, ".json"))->buffer;
-	//char * vOut = new char[wcslen(fpl)+1];
-	//wcstombs_s(NULL, vOut, wcslen(fpl)+1,vIn, wcslen(fpl)+1);	
-	//cJSON* json = cJSON_Parse(vOut);
-}
+void import(char* name);

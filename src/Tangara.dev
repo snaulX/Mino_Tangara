@@ -29,7 +29,7 @@ IncludeVersionInfo=1
 SupportXPThemes=0
 CompilerSet=1
 CompilerSettings=0000000000000000001000000
-UnitCount=24
+UnitCount=25
 
 [VersionInfo]
 Major=1
@@ -282,6 +282,16 @@ BuildCmd=
 
 [Unit24]
 FileName=lib\cJSON_Utils.h
+CompileCpp=0
+Folder=
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit25]
+FileName=Platform.c
 CompileCpp=0
 Folder=
 Compile=1
