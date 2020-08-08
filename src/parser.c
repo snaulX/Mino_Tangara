@@ -1,4 +1,4 @@
-#include "parser.h"
+#include "lextpl.h"
 
 #define putlexem() { addsb(&lexemes, lexem); clear(&lexem); }
 
