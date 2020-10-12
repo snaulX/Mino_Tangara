@@ -1375,8 +1375,10 @@ class Parser {
                                 }
                             }
                             isNumber = false
-                            buffer.append(cur)
-                            parseLexem(cur.toString())
+                            if (!cur.isWhitespace()) {
+                                buffer.append(cur)
+                                parseLexem(cur.toString())
+                            }
                         }
                     }
                     if (!isNumber) {
