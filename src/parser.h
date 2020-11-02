@@ -1,10 +1,9 @@
 #include <stdio.h>
 #include <stdbool.h>
-#include "Platform.h"
 #include "lib\TokensCreator.h"
+#include "utils\strlist.h"
 
 char* appname;
-Platform platform;
 PlatformType target;
 HeaderType header;
 strbuilder code;

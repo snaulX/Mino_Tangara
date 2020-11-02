@@ -62,3 +62,16 @@ void sbremove(strbuilder* sb)
 {
 	free(curptr(sb));
 }
+bool skipws(strbuilder* sb)
+{
+	while (isws(sb))
+	{
+		if (sb->index == sb->length)
+		{
+			sb->index--;
+			return true;
+		}
+		sb->index++;
+	}
+	return false;
+}

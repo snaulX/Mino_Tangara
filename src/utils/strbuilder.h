@@ -28,3 +28,5 @@ bool isdgt(strbuilder* sb);
 bool isltr(strbuilder* sb);
 // Remove char in sb with current index
 void sbremove(strbuilder* sb);
+// Skip whitespaces and update index and give value - is the end of strbuilder?
+bool skipws(strbuilder* sb);
