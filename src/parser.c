@@ -1,4 +1,4 @@
-#include "lextpl.h"
+#include "parser.h"
 
 #define putlexem() { addsb(&lexemes, lexem); clear(&lexem); }
 
@@ -6,10 +6,9 @@ char* appname;
 PlatformType target;
 HeaderType header;
 unsigned int errors_count, line;
-char isnumb; // can have so small values
 strbuilder code;
 strlist lexemes, strings;
-bool isstring = false, isliteral = false;
+bool isstring = false, isliteral = false, isnumb = false;
 
 void error(const char* type, const char* message)
 {
@@ -22,27 +21,42 @@ void lexerize(strbuilder prog)
 	create_sb(&lexem);
 	for (code.index = 0; code.index < code.length; code.index++)
 	{
-		skipws(&code);
-		if (isdgt(&code))
+		if (isstring)
 		{
-			// is number
+			//pass
 		}
-		else if (isltr(&code))
+		else
 		{
-			isliteral = true;
-		}
-		else 
-		{
-			switch (cur(&code))
+			skipws(&code);
+			if (isdgt(&code))
 			{
-				case '"':
-					isstring = !isstring;
-					break;
-				case '\'':
-					// is char
-					code.index++;
-					char ch = cur(&code);
-					break;
+				isnumb = true;
+			}
+			else if (isltr(&code))
+			{
+				isliteral = true;
+			}
+			else 
+			{
+				switch (cur(&code))
+				{
+					case '"':
+						isstring = true;
+						break;
+					case '\'':
+						// is char
+						code.index++;
+						char ch = cur(&code);
+						if (ch == '\\')
+						{
+							//pass
+						}
+						else
+						{
+							call_char(ch);
+						}
+						break;
+				}
 			}
 		}
 	}
